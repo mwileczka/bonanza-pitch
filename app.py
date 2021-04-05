@@ -6,6 +6,7 @@ app = Flask(__name__)
 app.debug = True
 app.config['SECRET_KEY'] = 'secret'
 app.config['SESSION_TYPE'] = 'filesystem'
+app.config['TEMPLATES_AUTO_RELOAD'] = True
 
 Session(app)
 

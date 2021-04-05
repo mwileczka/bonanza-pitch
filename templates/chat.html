@@ -3,47 +3,61 @@
   <head>
     <title>Penguin Coders Chat</title>
     <!--Link to CSS -->
-    <link href="../static/bootstrap.min.css" rel="stylesheet" />
-    <link href="../static/style.css" rel="stylesheet" />
+    <!--<link href="../static/bootstrap.min.css" rel="stylesheet" />-->
+    <!--<link href="../static/style.css" rel="stylesheet" />-->
+    <link href="../static/styles/cards.css" rel="stylesheet" type="text/css">
+	<link href="../static/styles/BPitch.css" rel="stylesheet" type="text/css">
 
+    <script src="../static/js/jquery-3.6.0.min.js"></script>
+     <!--<script src="../static/js/cards.js"></script>-->
+      <script src="../static/js/bpitch.js"></script>
     <script type="text/javascript" src="//code.jquery.com/jquery-1.4.2.min.js"></script>
-        <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.min.js"></script>
-        <script type="text/javascript" charset="utf-8">
-            var socket;
-            $(document).ready(function(){
-                socket = io.connect('http://' + document.domain + ':' + location.port + '/chat');
-                socket.on('connect', function() {
-                    socket.emit('join', {});
-                });
-                socket.on('status', function(data) {
-                    $('#chat').val($('#chat').val() + '<' + data.msg + '>\n');
-                    $('#chat').scrollTop($('#chat')[0].scrollHeight);
-                });
-                socket.on('message', function(data) {
-                    $('#chat').val($('#chat').val() + data.msg + '\n');
-                    $('#chat').scrollTop($('#chat')[0].scrollHeight);
-                });
-                $('#send').click(function(e) {
-                        text = $('#text').val();
-                        $('#text').val('');
-                        socket.emit('text', {msg: text});
-                });
-                $('#play').click(function(e) {
-                        socket.emit('play', {card: "2H"});
-                });
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.min.js"></script>
+    <script type="text/javascript" charset="utf-8">
+        var socket;
+        $(document).ready(function(){
+            socket = io.connect('http://' + document.domain + ':' + location.port + '/chat');
+            socket.on('connect', function() {
+                socket.emit('join', {});
             });
-            function leave_room() {
-                socket.emit('left', {}, function() {
-                    socket.disconnect();
-                    // go back to the login page
-                    window.location.href = "{{ url_for('index') }}";
-                });
-            }
-        </script>
+            socket.on('status', function(data) {
+                $('#chat').val($('#chat').val() + '<' + data.msg + '>\n');
+                $('#chat').scrollTop($('#chat')[0].scrollHeight);
+
+
+            });
+            socket.on('message', function(data) {
+                $('#chat').val($('#chat').val() + data.msg + '\n');
+                $('#chat').scrollTop($('#chat')[0].scrollHeight);
+            });
+            $('#send').click(function(e) {
+                    text = $('#text').val();
+                    $('#text').val('');
+                    socket.emit('text', {msg: text});
+            });
+            $('#play').click(function(e) {
+                    socket.emit('play', {card: "2H"});
+            });
+        });
+        function leave_room() {
+            socket.emit('left', {}, function() {
+                socket.disconnect();
+                // go back to the login page
+                window.location.href = "{{ url_for('index') }}";
+            });
+        }
+
+    </script>
   </head>
 
-  <body class="text-center">
-    
+  <body class="text-center" onload="DealCards()">
+    <div id="card-table" style="position: relative;">
+        <div id="divHand" class="hand hhand-compact active-hand" style="position: absolute;left:100px;bottom:0;">
+        </div>
+    </div>
+
+
+
     <div class="chatwindow">
       <h2 >Penguin Coders Chat</h2>
       <h2>Room : {{session['room']}}</h2><br>
