@@ -1,5 +1,33 @@
 html { background-color:#800080; }
-body { background-color:#800080; }
+body {
+	background-color:#800080;
+}
+
+.chatIcon{
+	height:100px;
+	position:absolute;
+	right:15px;
+	z-index:5;
+}
+
+.playedCardTop{
+	margin-bottom:-5vh;
+}
+.playedCardLeft{
+	transform:rotate(310deg);
+	padding-left:0vw;
+	margin-right:-20vw;
+	margin-bottom:-5vh;
+}
+.playedCardRight{
+	transform:rotate(60deg);
+	margin-left:-20vw;
+	margin-bottom:-5vh;
+}
+.playedCardBottom{
+	margin-top:0vh;
+}
+
 /*body {
 	position:relative;
 	border-radius:8px;

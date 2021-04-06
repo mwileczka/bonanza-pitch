@@ -37,3 +37,19 @@ function SetPlayCard(card, elem){
     container.innerHTML = "";
     container.appendChild(img);
 }
+
+function HandleChatClick(){
+    var chat = document.getElementById("divChat");
+    var gameTable = document.getElementById("gameTable");
+
+    if (chat.style.display ==="none"){
+        chat.style.display = "block";
+        gameTable.style.display = "none";
+    } else{
+        chat.style.display = "none";
+        gameTable.style.display = "block";
+    }
+
+
+}
+

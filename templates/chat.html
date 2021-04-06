@@ -56,29 +56,29 @@
 
   <body class="text-center" onload="DealCards()">
      <button type="button" id="deal" class="btn btn-play">DEAL</button><br /><br />
-
-    <div class="container" style="height:100%">
-        <div class="row" style="height:20vh">
-             <div id="divHandTop" class="col-sm hand hhand-compact" >
+     <img src="../static/img/chat.png" class="chatIcon" onclick="HandleChatClick();">
+    <div id="gameTable" class="container-fluid" style="height:100%">
+        <div class="row" style="height:25vh">
+             <div id="divHandTop" class="col-sm hand hhand-compact col-12" >
             </div>
         </div>
-         <div class="row" style="height:70vh" >
+         <div class="row" style="height:50vh" >
              <div id="divHandLeft"  class="col-2 col-sm-1 col-md-1 col-lg-1 col-xl-1 hand vhand-compact" ></div>
-             <div class="col">
-                 <table width="100%">
+             <div class="col h-100" >
+                 <table width="100%" style="margin-top:8vh;">
                      <tr>
                          <td width="33%"></td>
-                         <td width="33%"><div id="playedCardTop"></div></td>
+                         <td width="33%"><div id="playedCardTop" class="playedCardTop"></div></td>
                          <td></td>
                      </tr>
                      <tr>
-                         <td><div id="playedCardLeft"></div></td>
+                         <td><div id="playedCardLeft" class="playedCardLeft"></div></td>
                          <td></td>
-                         <td><div id="playedCardRight"></div></td>
+                         <td><div id="playedCardRight" class="playedCardRight"></div></td>
                      </tr>
                      <tr>
                          <td></td>
-                         <td><div id="playedCardBottom"></div></td>
+                         <td><div id="playedCardBottom" class="playedCardBottom"></div></td>
                          <td></td>
                      </tr>
 
@@ -94,19 +94,18 @@
         </div>
     </div>
 
-
+    <div id="divChat" class="chatwindow" style="display:none">
+      <h2 >Penguin Coders Chat</h2>
+      <h2>Room : {{session['room']}}</h2><br>
+      <textarea id="chat" cols="70" rows="10" placeholder="No messages yet. Start one..."></textarea><br /><br />
+      <input type="text" id="text" size="60" placeholder="Enter your message here" />
+      <button type="button" id="send" class="btn btn-success">SEND</button><br /><br />
+      <center><button type="button" class="btn btn-danger" onclick=leave_room()>Leave this Chat</button></center>
+    </div>#}
 
 
 
   </body>
 </html>
 
-{#    <div class="chatwindow" style="display:none">#}
-{#      <h2 >Penguin Coders Chat</h2>#}
-{#      <h2>Room : {{session['room']}}</h2><br>#}
-{#      <textarea id="chat" cols="70" rows="10" placeholder="No messages yet. Start one..."></textarea><br /><br />#}
-{#      <input type="text" id="text" size="60" placeholder="Enter your message here" />#}
-{#      <button type="button" id="send" class="btn btn-success">SEND</button><br /><br />#}
-{#      <center><button type="button" class="btn btn-danger" onclick=leave_room()>Leave this Chat</button></center>#}
-{##}
-{#    </div>#}
+
