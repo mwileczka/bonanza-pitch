@@ -6,9 +6,9 @@ CARDS = 2H,3S,4D,5C
 
 ```mermaid
 stateDiagram-v2
-  [*] --> ReqBet: Deal
-  ReqBet --> ReqBet: Bet
-  ReqBet --> ReqSuit: Won Bet
+  [*] --> ReqBid: Deal
+  ReqBid --> ReqBid: Bet
+  ReqBid --> ReqSuit: Won Bet
   ReqSuit --> ReqDiscard: Suit
   ReqDiscard --> ReqPlay: Discard
   ReqPlay --> ReqPlay: Play
@@ -58,6 +58,7 @@ table:{
   ]
   score: [int, int]
   points: [int, int]
+  deck_cnt: int
 }
 ```
 
