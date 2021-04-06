@@ -56,24 +56,50 @@
 
   <body class="text-center" onload="DealCards()">
      <button type="button" id="deal" class="btn btn-play">DEAL</button><br /><br />
-    <div class="container">
-        <div class="row">
-             <div id="divHandTop" class="col-sm fixed-left hand hhand-compact active-hand" >
+
+    <div class="container" style="height:100%">
+        <div class="row" style="height:20vh">
+             <div id="divHandTop" class="col-sm hand hhand-compact" >
             </div>
         </div>
-         <div class="row">
-             <div id="divHandLeft" class="col-sm fixed-left hand hhand-compact active-hand" >
-             <div id="divHandRight" class="col-sm fixed-right hand hhand-compact active-hand" ></div>
-        </div>
-        <div class="row">
-             <div id="divHand" class="col-sm fixed-bottom hand hhand-compact active-hand" >
+         <div class="row" style="height:70vh" >
+             <div id="divHandLeft"  class="col-2 col-sm-1 col-md-1 col-lg-1 col-xl-1 hand vhand-compact" ></div>
+             <div class="col">
+                 <table width="100%">
+                     <tr>
+                         <td width="33%"></td>
+                         <td width="33%"><div id="playedCardTop"></div></td>
+                         <td></td>
+                     </tr>
+                     <tr>
+                         <td><div id="playedCardLeft"></div></td>
+                         <td></td>
+                         <td><div id="playedCardRight"></div></td>
+                     </tr>
+                     <tr>
+                         <td></td>
+                         <td><div id="playedCardBottom"></div></td>
+                         <td></td>
+                     </tr>
+
+                 </table>
+
+
+             </div>
+             <div id="divHandRight"  class="col-2 col-sm-1 col-md-1 col-lg-1 col-xl-1 hand vhand-compact" style="text-align:right;" ></div>
+         </div>
+        <div class="row fixed-bottom" style="height:20vh">
+             <div id="divHand" class="col-sm  hand hhand-compact active-hand" >
             </div>
         </div>
-{#style="position: absolute;left:100px;bottom:0;"#}
     </div>
 
 
 
+
+
+  </body>
+</html>
 
 {#    <div class="chatwindow" style="display:none">#}
 {#      <h2 >Penguin Coders Chat</h2>#}
@@ -84,5 +110,3 @@
 {#      <center><button type="button" class="btn btn-danger" onclick=leave_room()>Leave this Chat</button></center>#}
 {##}
 {#    </div>#}
-  </body>
-</html>

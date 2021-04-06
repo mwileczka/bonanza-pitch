@@ -1,5 +1,5 @@
 img.pcard {
-	width: 100px;
+	width: 10vw;
 	margin: 0;
 	padding: 0;
 	border: 0;
@@ -17,6 +17,9 @@ img.pcard {
 .active-hand img.pcard { 
 	cursor: pointer;
 }
+
+.top-hand{}
+
 
 /*
  * A horizontal hand, class="hand hhand".  The enitire pcard is visible.
@@ -84,7 +87,7 @@ img.pcard {
 	padding-right: 10px;
 }
 .vhand-compact.active-hand img.pcard:hover,
-.active-hand .vhand-compact img.pcard:hover { 
+.active-hand .vhand-compact img.pcard:hover {
 	display: block; 
 	padding-right: 0px;
 	padding-left: 10px;
