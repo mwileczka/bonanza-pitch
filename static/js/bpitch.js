@@ -1,15 +1,22 @@
  function DealCards(){
-            AddCardToHand('AS');
-            AddCardToHand('KS');
-            AddCardToHand('QS');
-            AddCardToHand('JS');
-            AddCardToHand('10S');
-            AddCardToHand('5D');
+            AddCardToHand('AS', 'divHand');
+            AddCardToHand('KS', 'divHand');
+            AddCardToHand('QS', 'divHand');
+            AddCardToHand('JS', 'divHand');
+            AddCardToHand('10S', 'divHand');
+            AddCardToHand('5D', 'divHand');
+
+            AddCardToHand('RED_BACK', 'divHandTop');
+            AddCardToHand('RED_BACK', 'divHandTop');
+            AddCardToHand('RED_BACK', 'divHandTop');
+            AddCardToHand('RED_BACK', 'divHandTop');
+            AddCardToHand('RED_BACK', 'divHandTop');
+            AddCardToHand('RED_BACK', 'divHandTop');
         }
-function AddCardToHand(card){
-    var container = document.getElementById("divHand");
+function AddCardToHand(card, hand){
+    var container = document.getElementById(hand);
     var img = document.createElement("img");
     img.setAttribute("src", "../static/cards/" + card + ".svg")
-    img.setAttribute("class", "card")
+    img.setAttribute("class", "pcard")
     container.appendChild(img);
 }

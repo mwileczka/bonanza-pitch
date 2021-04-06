@@ -3,7 +3,8 @@
   <head>
     <title>Penguin Coders Chat</title>
     <!--Link to CSS -->
-    <!--<link href="../static/bootstrap.min.css" rel="stylesheet" />-->
+
+    <link href="../static/styles/bootstrap.min.css" rel="stylesheet" />
     <!--<link href="../static/style.css" rel="stylesheet" />-->
     <link href="../static/styles/cards.css" rel="stylesheet" type="text/css">
 	<link href="../static/styles/BPitch.css" rel="stylesheet" type="text/css">
@@ -38,6 +39,9 @@
             $('#play').click(function(e) {
                     socket.emit('play', {card: "2H"});
             });
+            $('#deal').click(function(e) {
+                    socket.emit('deal');
+            });
         });
         function leave_room() {
             socket.emit('left', {}, function() {
@@ -51,21 +55,34 @@
   </head>
 
   <body class="text-center" onload="DealCards()">
-    <div id="card-table" style="position: relative;">
-        <div id="divHand" class="hand hhand-compact active-hand" style="position: absolute;left:100px;bottom:0;">
+     <button type="button" id="deal" class="btn btn-play">DEAL</button><br /><br />
+    <div class="container">
+        <div class="row">
+             <div id="divHandTop" class="col-sm fixed-left hand hhand-compact active-hand" >
+            </div>
         </div>
+         <div class="row">
+             <div id="divHandLeft" class="col-sm fixed-left hand hhand-compact active-hand" >
+             <div id="divHandRight" class="col-sm fixed-right hand hhand-compact active-hand" ></div>
+        </div>
+        <div class="row">
+             <div id="divHand" class="col-sm fixed-bottom hand hhand-compact active-hand" >
+            </div>
+        </div>
+{#style="position: absolute;left:100px;bottom:0;"#}
     </div>
 
 
 
-    <div class="chatwindow">
-      <h2 >Penguin Coders Chat</h2>
-      <h2>Room : {{session['room']}}</h2><br>
-      <textarea id="chat" cols="70" rows="10" placeholder="No messages yet. Start one..."></textarea><br /><br />
-      <input type="text" id="text" size="60" placeholder="Enter your message here" />
-      <button type="button" id="send" class="btn btn-success">SEND</button><br /><br />
-      <center><button type="button" class="btn btn-danger" onclick=leave_room()>Leave this Chat</button></center>
-      <button type="button" id="play" class="btn btn-play">PLAY</button><br /><br />
-    </div>
+
+{#    <div class="chatwindow" style="display:none">#}
+{#      <h2 >Penguin Coders Chat</h2>#}
+{#      <h2>Room : {{session['room']}}</h2><br>#}
+{#      <textarea id="chat" cols="70" rows="10" placeholder="No messages yet. Start one..."></textarea><br /><br />#}
+{#      <input type="text" id="text" size="60" placeholder="Enter your message here" />#}
+{#      <button type="button" id="send" class="btn btn-success">SEND</button><br /><br />#}
+{#      <center><button type="button" class="btn btn-danger" onclick=leave_room()>Leave this Chat</button></center>#}
+{##}
+{#    </div>#}
   </body>
 </html>
