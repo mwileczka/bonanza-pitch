@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <title>Bonanza Pitch</title>
+  <!--Link to CSS -->
+  <link href="{{ url_for('static', filename='styles/bootstrap.min.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='styles/style.css') }}" rel="stylesheet">
+    <script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
+
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.min.js"></script>
+    <script type="text/javascript" charset="utf-8">
+        const socket = io("/pitch");
+        $(document).ready(function(){
+            socket.on("connect", () => {
+               console.log(socket.id)
+                socket.emit("req_lobby")
+            });
+
+            socket.on('lobby', function(data) {
+                console.log(data)
+                for (let idx = 0; idx < 4; idx++){
+                    if (data[0]['seats'][idx] == null){
+                        $('#seat'+idx).text('Sit (Team ' + (idx % 2 + 1) + ')')
+                        $('#seat'+idx).prop('disabled', false);
+                    }else{
+                        $('#seat'+idx).text(data[0]['seats'][idx] + ' (Team ' + (idx % 2 + 1) + ')')
+                        $('#seat'+idx).prop('disabled', true);
+                    }
+                }
+            });
+        });
+
+
+
+
+
+    </script>
+</head>
+
+<body class="text-center">
+  <form class="form-signin" action="{{url_for('table')}}" method="POST">
+    <h1 class="h2 mb-3 font-weight-normal">Bonanza Pitch</h1><br><br>
+
+    <input type="text" id="username" name="username" class="form-control" placeholder="Username" required autofocus><br>
+      <input type="text" id="room" name="room" class="form-control" placeholder="Room" value="Matrix" readonly required><br>
+    <button id="seat0" class="btn btn-lg btn-primary btn-block" name="seat" value="0" disabled>Seat 1 (Team 1)</button>
+      <button id="seat1" class="btn btn-lg btn-primary btn-block" name="seat" value="1" disabled>Seat 2 (Team 2)</button>
+      <button id="seat2" class="btn btn-lg btn-primary btn-block" name="seat" value="2" disabled>Seat 3 (Team 1)</button>
+      <button id="seat3" class="btn btn-lg btn-primary btn-block" name="seat" value="3" disabled>Seat 4 (Team 2)</button>
+
+  </form>
+</body>
+
+</html>

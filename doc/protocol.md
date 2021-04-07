@@ -1,6 +1,31 @@
+# Definitions
+
 SEATS = 0,1,2,3
 TEAMS = 0,1
 CARDS = 2H,3S,4D,5C
+
+Table will have a name.
+User will have a username.
+When a user comes online they will be assigned a session ID
+
+# Landing Page
+
+
+Display Tables and Seats
+Have a "Sit" button at open seats.
+Have an "Add Table" button.
+
+Server will provide updates as other people sit or add tables.
+
+```
+[
+{
+    name: str
+    seats: [ username: str, ... ] 
+},
+...
+]
+```
 
 
 

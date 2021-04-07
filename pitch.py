@@ -67,7 +67,7 @@ class Table:
         WaitTrick = auto()
         WaitDeal = auto()
 
-    def __init__(self, id=None):
+    def __init__(self, id=None, tx=None):
         self.trump = None
         self.dealer = 0
         self.lead = None
@@ -78,6 +78,7 @@ class Table:
         self.state = Table.State.WaitDeal
         self.id = id
         self.kitty = Deck([])
+        self.tx = tx
 
     def get_json(self):
         return {
@@ -112,11 +113,8 @@ class Table:
         self.points[1] = 0
         self.trump = None
 
-        # TODO send req_bid
-
-        print('req_bid', {
-            'min': 1
-        })
+        # TODO send to seat
+        # self.send('req_bid', {'min': 1})
 
         self.state = Table.State.WaitBid
 
@@ -143,6 +141,8 @@ class Table:
             if seat.id == uid:
                 return seat
         return None
+
+
 
 
 if __name__ == '__main__':

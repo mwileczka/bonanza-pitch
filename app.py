@@ -1,7 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for, session
-from flask_socketio import SocketIO, join_room, leave_room, emit, Namespace
+from flask_socketio import SocketIO, join_room, leave_room, emit, Namespace, rooms
+import flask_socketio
 from flask_session import Session
 from pitch import Table, Deck
+import flask
 
 app = Flask(__name__)
 app.debug = True
@@ -18,31 +20,40 @@ tables = {}  # type: Dict[Table]
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    return render_template('index.html')
+    return render_template('lobby.html')
 
 
-@app.route('/chat', methods=['GET', 'POST'])
-def chat():
+@app.route('/table', methods=['GET', 'POST'])
+def table():
     if request.method == 'POST':
         username = request.form['username']
         room = request.form['room']
+        seat = request.form['seat']
         # Store the data in session
         session['username'] = username
         session['room'] = room
-        return render_template('chat.html', session=session)
+        session['seat'] = seat
+        return render_template('table.html', session=session)
     else:
         if session.get('username') is not None:
-            return render_template('chat.html', session=session)
+            return render_template('table.html', session=session)
         else:
             return redirect(url_for('index'))
 
 
-class ChatNamespace(Namespace):
+class PitchNamespace(Namespace):
     def on_join(self, message):
         room = session.get('room')
+        username = session.get('username')
+        request.sid
         join_room(room)
-        emit('status', {'msg': session.get('username') + ' has entered the room.'}, room=room)
-        t = tables.setdefault(room, Table(id=room))
+        print("join", room, username, request.sid)
+
+        sio = flask.current_app.extensions['socketio']
+        print(sio.server.manager.rooms)
+
+        emit('status', {'msg': username + ' has entered the room.'}, room=room)
+        t = tables.setdefault(room, Table(id=room, tx=self.tx))
 
     def on_text(self, message):
         room = session.get('room')
@@ -54,20 +65,23 @@ class ChatNamespace(Namespace):
     def on_left(self, message):
         room = session.get('room')
         username = session.get('username')
+        print('left', room, username, request.sid)
         leave_room(room)
         session.clear()
+
         emit('status', {'msg': username + ' has left the room.'}, room=room)
 
     def on_disconnect(self):
         room = session.get('room')
         username = session.get('username')
-        print('Client disconnected', room, username)
+        print('disconnect', room, username, request.sid)
 
     def on_connect(self):
         room = session.get('room')
         username = session.get('username')
-        t = tables.setdefault(room, Table(id=room))
-        print('Client connect', room, username)
+        print('connect', room, username, request.sid)
+
+        t = tables.setdefault(room, Table(id=room, tx=self.tx))
 
     def on_play(self, message):
         room = session.get('room')
@@ -89,8 +103,15 @@ class ChatNamespace(Namespace):
         emit('table', t.get_json())
         emit('hand', t.get_seat(username).get_hand_json())
 
+    def tx(self, event, args, to_all=False):
+        room = session.get('room') if to_all else None
+        emit(event, args, room=room)
 
-socketio.on_namespace(ChatNamespace('/chat'))
+    def on_req_lobby(self):
+        print('on_req_lobby')
+        emit('lobby', [{'name': 'Matrix', 'seats': [None, 'Laura', 'Mike', None]}])
+
+socketio.on_namespace(PitchNamespace('/pitch'))
 
 if __name__ == '__main__':
     socketio.run(app)
