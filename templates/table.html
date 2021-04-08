@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Penguin Coders Chat</title>
+    <title>Bonanza Pitch - {{ session.get('table') }}</title>
     <!--Link to CSS -->
 
     <link href="../static/styles/bootstrap.min.css" rel="stylesheet" />
@@ -15,6 +15,10 @@
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.min.js"></script>
     <script type="text/javascript" charset="utf-8">
         const socket = io('/pitch');
+        const username = "{{ session.get('username') }}";
+        const table = "{{ session.get('table') }}";
+        const seat = {{ session.get('seat') }};
+
         $(document).ready(function(){
             socket.on('connect', function() {
                 console.log(socket.id)
@@ -42,8 +46,8 @@
                     socket.emit('deal');
             });
         });
-        function leave_room() {
-            socket.emit('left', {}, function() {
+        function leave_table() {
+            socket.emit('leave', {}, function() {
                 socket.disconnect();
                 // go back to the login page
                 window.location.href = "{{ url_for('index') }}";
@@ -54,7 +58,11 @@
   </head>
 
   <body class="text-center" onload="DealCards()">
-     <button type="button" id="deal" class="btn btn-play">DEAL</button><br /><br />
+  user={{ session['username'] }}  table={{ session['table'] }}  seat={{ session['seat'] }}
+  <button type="button" id="deal" class="btn btn-info">Deal</button>
+  <button type="button" class="btn btn-danger" onclick=leave_table()>Leave</button>
+  <br /><br />
+
      <img src="../static/img/chat.png" class="chatIcon" onclick="HandleChatClick();">
     <div id="gameTable" class="container-fluid" style="height:100%">
         <div class="row" style="height:25vh">
@@ -94,13 +102,10 @@
     </div>
 
     <div id="divChat" class="chatwindow" style="display:none">
-      <h2 >Penguin Coders Chat</h2>
-      <h2>Room : {{session['room']}}</h2><br>
       <textarea id="chat" cols="70" rows="10" placeholder="No messages yet. Start one..."></textarea><br /><br />
       <input type="text" id="text" size="60" placeholder="Enter your message here" />
       <button type="button" id="send" class="btn btn-success">SEND</button><br /><br />
-      <center><button type="button" class="btn btn-danger" onclick=leave_room()>Leave this Chat</button></center>
-    </div>#}
+    </div>
 
 
 
