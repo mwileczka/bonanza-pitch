@@ -1,9 +1,9 @@
 var tableState = {theBid: 0, trump:'', dealer:0, lead:0,
     seats:[
-        {hand:6, played:'',bid:0,dealer:true,lead:false},
-        {hand:6, played:'',bid:0,dealer:false,lead:false},
-        {hand:6, played:'',bid:0,dealer:false,lead:false},
-        {hand:6, played:'',bid:0,dealer:false,lead:false}
+        {hand:6, played:'',bid:-1,dealer:true,lead:false,username:'Laura'},
+        {hand:6, played:'',bid:-1,dealer:false,lead:false,username:'Teddy'},
+        {hand:6, played:'',bid:-1,dealer:false,lead:false,username:'Ben'},
+        {hand:6, played:'',bid:-1,dealer:false,lead:false,username:'Mike'}
     ]
     , score:[0,0], points:[0,0], deck_ct:0};
 
@@ -12,13 +12,17 @@ function StartGame(){
 }
 function RefreshTable(state){
     //South Seat
+    RefreshPlayerDisplay(state.seats[0],'playerNameSouth');
     //West Seat
     DealHand('divHandWest', state.seats[1].hand);
+    RefreshPlayerDisplay(state.seats[1],'playerNameWest');
     //North Seat
     DealHand('divHandNorth', state.seats[2].hand);
+    RefreshPlayerDisplay(state.seats[2],'playerNameNorth');
     //East Seat
     DealHand('divHandEast', state.seats[3].hand);
-    RefreshPlayerDisplays();
+    RefreshPlayerDisplay(state.seats[3],'playerNameEast');
+
 }
 function DealHand(handName, ct){
     var hand = document.getElementById(handName);
@@ -28,39 +32,23 @@ function DealHand(handName, ct){
         for (i = 0 ; i < ct ;i++){
             AddCardToHand('RED_BACK', handName);
         }
-
     }
 }
 
-
-
-function RefreshPlayerDisplays(){
-    var str = username + " &bull; "
-    if (tableState.theBid === 0){
-        str += "Pass";
-    }else{
-        str += tableState.theBid;
+function RefreshPlayerDisplay(seat, displayName){
+    var str = seat.username
+    if (seat.bid === 0){
+        str +=+" &bull; Pass";
     }
+    else if (seat.bid > 0){
+        str += " &bull; " + seat.bid;
+    }
+    if (tableState.trump === 'S') str += " &bull; &spadesuit;"
+    else if (tableState.trump === 'D') str += " &bull; &diams;"
+    else if (tableState.trump === 'C') str += " &bull; &clubsuit;"
+    else if (tableState.trump === 'H') str += " &bull; &heartsuit;"
 
-
-    switch(tableState.trump) {
-        case 'S':
-            str += " &bull; &spadesuit;"
-    break;
-        case 'D':
-            str += " &bull; &diams;"
-    break;
-        case 'C':
-            str += " &bull; &clubsuit;"
-            break;
-        case 'H':
-            str += " &bull; &heartsuit;"
-            break;
-  default:
-    // code block
-}
-
-    $( "#playerNameSouth" ).html(str);
+    $( "#"+displayName ).html(str);
 }
 
 function SetBidTurn(playerID, minBid) {

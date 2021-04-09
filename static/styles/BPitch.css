@@ -43,8 +43,25 @@ body {
 	color:white;
 	font-weight: bold;
 	font-size: 3vh;
+	white-space: nowrap;
+	text-align:center;
+	width:100%;
+}
+.player-name-west{
+	/*transform-origin:bottom left;*/
+	position: absolute;
+    top: 50%;
+    left: 50%;
+	transform:  translateX(-50%) translateY(-50%) rotate(90deg);
+
 }
 
+.player-name-east{
+	position: absolute;
+    top: 50%;
+    left: 50%;
+	transform:  translateX(-50%) translateY(-50%) rotate(-90deg);
+}
 
 .modal-title-bid-message {
     margin-bottom: 0;
