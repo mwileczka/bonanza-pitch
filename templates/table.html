@@ -35,8 +35,18 @@
                 $('#chat').scrollTop($('#chat')[0].scrollHeight);
             });
             socket.on('table', function(data) {
-                console.log('table', data)
+                console.log('table', data);
+                RefreshTable(data);
             });
+            socket.on('hand', function(data) {
+                console.log('hand', data)
+                DealHand(data);
+            });
+            socket.on('req_bid', function(data) {
+                console.log('hand', data)
+                OnRequestBid(data);
+            });
+
 
 
             $('#send').click(function(e) {
@@ -83,7 +93,8 @@
                 <div id="playerNameWest" class="player-name player-name-west" style="width:100%;"></div>
             </div>
              <div id="divPlayingArea" class="col h-100" >
-                 <table width="100%" style="margin-top:8vh;">
+
+                 <table width="100%" style="margin-top:8vh;" >
                      <tr>
                          <td width="33%"></td>
                          <td width="33%"><div id="playedCardTop" class="playedCardTop"></div></td>
@@ -91,7 +102,7 @@
                      </tr>
                      <tr>
                          <td><div id="playedCardLeft" class="playedCardLeft"></div></td>
-                         <td></td>
+                         <td><div id="divKitty" class="hand hhand-xcompact active-hand" style="margin-left: -72px;" ></div></td>
                          <td><div id="playedCardRight" class="playedCardRight"></div></td>
                      </tr>
                      <tr>
@@ -101,8 +112,6 @@
                      </tr>
 
                  </table>
-
-
              </div>
               <div class="col-1" >
                 <div id="playerNameEast" class="player-name player-name-east"></div>
