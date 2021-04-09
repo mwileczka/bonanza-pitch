@@ -42,6 +42,7 @@ class Seat:
         self.idx = idx
         self.id = id
         self.kept = 0
+        self.player = None
 
     def get_table_json(self):
         return {
@@ -56,6 +57,12 @@ class Seat:
             'cards': list(self.hand)
         }
 
+    def tx(self, event, args):
+        if self.player and self.player.ws_token:
+            base_tx(self.player.ws_token, event, args)
+
+    def tx_hand(self):
+        self.tx('hand', self.get_hand_json())
 
 class Table:
     @unique
@@ -67,7 +74,10 @@ class Table:
         WaitTrick = auto()
         WaitDeal = auto()
 
-    def __init__(self, id=None, tx=None):
+    def tx(self, event, args):
+        base_tx(self.id, event, args)
+
+    def __init__(self, id=None):
         self.trump = None
         self.dealer = 0
         self.lead = None
@@ -78,7 +88,6 @@ class Table:
         self.state = Table.State.WaitDeal
         self.id = id
         self.kitty = Deck([])
-        self.tx = tx
 
     def get_json(self):
         return {
@@ -113,7 +122,7 @@ class Table:
         self.points[1] = 0
         self.trump = None
 
-        # TODO send to seat
+        self.update()
         # self.send('req_bid', {'min': 1})
 
         self.state = Table.State.WaitBid
@@ -133,7 +142,7 @@ class Table:
     def discard(self):
         pass
 
-    def play_card(self):
+    def play_card(self, seat, card):
         pass
 
     def get_seat(self, uid):
@@ -142,11 +151,33 @@ class Table:
                 return seat
         return None
 
+    def update(self, seat_idx=None):
+        self.tx('table', self.get_json())
+        if seat_idx:
+            # send hand to that seat
+            self.seats[seat_idx].tx_hand()
+        else:
+            # send hands to all seats
+            for seat in self.seats:
+                seat.tx_hand()
 
+
+class Player:
+
+    def __init__(self, username):
+        self.session_token = None
+        self.ws_token = None
+        self.username = username
+
+    def tx(self, event, args):
+        base_tx(self.ws_token, event, args)
+
+
+def base_tx(to, event, args):
+    print(to, event, args)
 
 
 if __name__ == '__main__':
-
     t = Table()
     t.deal()
     pprint.pprint(t.get_json())

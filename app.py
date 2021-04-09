@@ -1,8 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 from flask_socketio import SocketIO, join_room, leave_room, emit, Namespace, rooms
 import flask_socketio
+
+import pitch
 from flask_session import Session
-from pitch import Table, Deck
+from pitch import Table, Deck, Player
 from threading import Lock
 import flask
 
@@ -18,6 +20,8 @@ socketio = SocketIO(app, manage_session=False, async_mode="threading")
 
 tables = {}  # type: Dict[Table]
 
+players = {}
+
 thread = None
 thread_lock = Lock()
 
@@ -32,7 +36,7 @@ def table():
     if request.method == 'POST':
         username = request.form['username']
         table = request.form['table']
-        seat = request.form['seat']
+        seat = int(request.form['seat'])
         # Store the data in session
         session['username'] = username
         session['table'] = table
@@ -46,19 +50,39 @@ def table():
             return redirect(url_for('index'))
 
 
-class PitchNamespace(Namespace):
-    def on_join(self, message):
+class TableNamespace(Namespace):
+    def on_connect(self):
         table_name = session.get('table')
         username = session.get('username')
         seat = session.get('seat')
+        print('connect', username, table_name, seat)
+        emit('status', {'msg': f'{username} has been connected.'}, room=table_name)
+
         join_room(table_name)
-        print("join", username, table_name, seat)
 
-        # sio = flask.current_app.extensions['socketio']
-        # print(sio.server.manager.rooms)
+        if username in players:
+            player = players[username]
+        else:
+            player = Player(username)
+            players[username] = player
 
-        emit('status', {'msg': username + ' has joined the table.'}, room=table_name)
-        t = tables.setdefault(table_name, Table(id=table_name, tx=self.tx))
+        if player.session_token and player.session_token != session.sid:
+            print('replacing player session')
+        player.session_token = session.sid
+
+        if player.ws_token and player.ws_token != request.sid:
+            print('replacing ws token')
+        player.ws_token = request.sid
+
+        global thread
+        with thread_lock:
+            if thread is not None and not thread.is_alive():
+                thread = None
+            if thread is None:
+                thread = socketio.start_background_task(self.background_thread)
+
+        t = tables.setdefault(table_name, Table(id=table_name))
+        t.seats[seat].player = player
 
     def on_text(self, message):
         table_name = session.get('table')
@@ -77,29 +101,19 @@ class PitchNamespace(Namespace):
         del session['table']
         del session['seat']
 
-        emit('status', {'msg': username + ' has left the table.'}, room=table_name)
+        emit('status', {'msg': f'{username} has left the table.'}, room=table_name)
 
     def on_disconnect(self):
         table_name = session.get('table')
         username = session.get('username')
         seat = session.get('seat')
         print('disconnect', username, table_name, seat)
+        leave_room(table_name)
+        players[username].ws_token = None
         emit('status', {'msg': username + ' has been disconnected.'}, room=table_name)
 
-    def on_connect(self):
-        table_name = session.get('table')
-        username = session.get('username')
-        seat = session.get('seat')
-        print('connect', username, table_name, seat)
-        emit('status', {'msg': username + ' has been connected.'}, room=table_name)
-        session['sid'] = request.sid
-
-        global thread
-        with thread_lock:
-            if thread is None:
-                thread = socketio.start_background_task(self.background_thread)
-
-        t = tables.setdefault(table_name, Table(id=table_name, tx=self.tx))
+        if request.sid == players[username].ws_token:
+            players[username].ws_token = None
 
     def background_thread(self):
         print("Background thread started")
@@ -110,19 +124,22 @@ class PitchNamespace(Namespace):
             count += 1
             socketio.emit('status', {'msg': f'count is {count}'}, namespace=self.namespace)
 
+            if '/table' not in socketio.server.manager.rooms:
+                print('No more tables - Background thread stopped')
+                break
+
     def on_play(self, message):
         table_name = session.get('table')
         username = session.get('username')
         seat = session.get('seat')
-        print('Played', message)
+        t = tables.get(table_name)
+        t.play_card(seat, message.get('card'))
 
     def on_update(self):
         table_name = session.get('table')
-        username = session.get('username')
         seat = session.get('seat')
         t = tables[table_name]
-        emit('table', t.get_json())
-        emit('hand', t.get_seat(username).get_hand_json())
+        t.update(seat_idx=seat)
 
     def on_deal(self):
         table_name = session.get('table')
@@ -130,19 +147,32 @@ class PitchNamespace(Namespace):
         seat = session.get('seat')
         t = tables[table_name]
         t.deal()
-        emit('table', t.get_json())
-        emit('hand', t.get_seat(username).get_hand_json())
 
-    def tx(self, event, args, to_all=False):
-        room = session.get('room') if to_all else None
-        emit(event, args, room=room)
-
+class LobbyNamespace(Namespace):
     def on_req_lobby(self):
         print('on_req_lobby')
         emit('lobby', [{'name': 'Matrix', 'seats': [None, 'Laura', 'Mike', None]}])
 
+    def on_disconnect(self):
+        username = session.get('username')
+        print('disconnect', username)
+        leave_room('lobby')
 
-socketio.on_namespace(PitchNamespace('/pitch'))
+    def on_connect(self):
+        username = session.get('username')
+        print('connect', username)
+        join_room('lobby')
+
+
+socketio.on_namespace(TableNamespace('/table'))
+socketio.on_namespace(LobbyNamespace('/lobby'))
+
+def sio_tx(to, event, args):
+    print('sio_tx', to, event, args)
+    socketio.emit(event, args, to=to, namespace='/table')
+
+# override the transmitter to use socketio
+pitch.base_tx = sio_tx
 
 if __name__ == '__main__':
     socketio.run(app)
