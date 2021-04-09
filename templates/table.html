@@ -57,7 +57,7 @@
     </script>
   </head>
 
-  <body class="text-center" onload='ShowSelectSuit()'>
+  <body class="text-center" onload='StartGame()'>
   user={{ session['username'] }}  table={{ session['table'] }}  seat={{ session['seat'] }}
   <button type="button" id="deal" class="btn btn-info">Deal</button>
   <button type="button" class="btn btn-danger" onclick=leave_table()>Leave</button>
@@ -66,11 +66,11 @@
      <img src="../static/img/chat.png" class="chatIcon" onclick="HandleChatClick();">
     <div id="gameTable" class="container-fluid" style="height:100%">
         <div class="row" style="height:25vh">
-             <div id="divHandTop" class="col-sm hand hhand-compact col-12" >
+             <div id="divHandNorth" class="col-sm hand hhand-compact col-12" >
             </div>
         </div>
          <div class="row" style="height:50vh" >
-             <div id="divHandLeft"  class="col-2 col-sm-1 col-md-1 col-lg-1 col-xl-1 hand vhand-compact" ></div>
+             <div id="divHandWest"  class="col-2 col-sm-1 col-md-1 col-lg-1 col-xl-1 hand vhand-compact" ></div>
              <div id="divPlayingArea" class="col h-100" >
                  <table width="100%" style="margin-top:8vh;">
                      <tr>
@@ -93,7 +93,7 @@
 
 
              </div>
-             <div id="divHandRight"  class="col-2 col-sm-1 col-md-1 col-lg-1 col-xl-1 hand vhand-compact" style="text-align:right;" ></div>
+             <div id="divHandEast"  class="col-2 col-sm-1 col-md-1 col-lg-1 col-xl-1 hand vhand-compact" style="text-align:right;" ></div>
          </div>
 
         <div class="fixed-bottom" >
@@ -101,7 +101,7 @@
                 <div id="playerNameSouth" class="col player-name"></div>
             </div>
             <div class="row" style="height:15vh">
-                <div id="divHand" class="col-sm  hand hhand-compact active-hand" ></div>
+                <div id="divHandSouth" class="col-sm  hand hhand-compact active-hand" ></div>
             </div>
         </div>
     </div>
