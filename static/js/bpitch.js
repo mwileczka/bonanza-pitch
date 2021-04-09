@@ -1,35 +1,54 @@
-function DealCards(){
-    RefreshPlayerDisplays();
+var tableState = {theBid: 0, trump:'', dealer:0, lead:0,
+    seats:[
+        {hand:6, played:'',bid:-1,dealer:true,lead:false,username:'Laura'},
+        {hand:6, played:'',bid:-1,dealer:false,lead:false,username:'Teddy'},
+        {hand:6, played:'',bid:-1,dealer:false,lead:false,username:'Ben'},
+        {hand:6, played:'',bid:-1,dealer:false,lead:false,username:'Mike'}
+    ]
+    , score:[0,0], points:[0,0], deck_ct:0};
 
-    AddCardToHand('AS', 'divHand');
-    AddCardToHand('KS', 'divHand');
-    AddCardToHand('QS', 'divHand');
-    AddCardToHand('JS', 'divHand');
-    AddCardToHand('10S', 'divHand');
-    AddCardToHand('5D', 'divHand');
-
-    var i;
-    for (i = 0 ; i < 6 ; i++){
-        AddCardToHand('RED_BACK', 'divHandTop');
-    }
-    for (i = 0 ; i < 6 ; i++){
-        AddCardToHand('RED_BACK', 'divHandLeft');
-    }
-    for (i = 0 ; i < 6 ; i++){
-        AddCardToHand('RED_BACK', 'divHandRight');
-    }
-//SetBidTurn(1,5);
-    // SetPlayCard("3C", "playedCardTop");
-    // SetPlayCard("4C", "playedCardBottom");
-    //  SetPlayCard("5C", "playedCardLeft");
-    //  SetPlayCard("6C", "playedCardRight");
-}
 function StartGame(){
+    RefreshTable(tableState);
+}
+function RefreshTable(state){
+    //South Seat
+    RefreshPlayerDisplay(state.seats[0],'playerNameSouth');
+    //West Seat
+    DealHand('divHandWest', state.seats[1].hand);
+    RefreshPlayerDisplay(state.seats[1],'playerNameWest');
+    //North Seat
+    DealHand('divHandNorth', state.seats[2].hand);
+    RefreshPlayerDisplay(state.seats[2],'playerNameNorth');
+    //East Seat
+    DealHand('divHandEast', state.seats[3].hand);
+    RefreshPlayerDisplay(state.seats[3],'playerNameEast');
 
 }
+function DealHand(handName, ct){
+    var hand = document.getElementById(handName);
+    if(hand.childElementCount !== ct){
+        hand.innerHTML= "";
+        var i = 0;
+        for (i = 0 ; i < ct ;i++){
+            AddCardToHand('RED_BACK', handName);
+        }
+    }
+}
 
-function RefreshPlayerDisplays(){
-    $( "#playerNameSouth" ).html(username + " &#8226 " + theBid);
+function RefreshPlayerDisplay(seat, displayName){
+    var str = seat.username
+    if (seat.bid === 0){
+        str +=+" &bull; Pass";
+    }
+    else if (seat.bid > 0){
+        str += " &bull; " + seat.bid;
+    }
+    if (tableState.trump === 'S') str += " &bull; &spadesuit;"
+    else if (tableState.trump === 'D') str += " &bull; &diams;"
+    else if (tableState.trump === 'C') str += " &bull; &clubsuit;"
+    else if (tableState.trump === 'H') str += " &bull; &heartsuit;"
+
+    $( "#"+displayName ).html(str);
 }
 
 function SetBidTurn(playerID, minBid) {
@@ -99,18 +118,20 @@ function CreateBidButton(txt, enabled, val){
     btn.innerHTML = txt;
     return btn;
 }
-var theBid =0;
+
 function SendBid(bid){
 
     $( "#divBid" ).hide();
     var strBid = "bid:" + bid;
     socket.emit(strBid);
-    theBid = bid;
+    tableState.theBid = bid;
     RefreshPlayerDisplays();
 
 }
 function OnSelectSuit(suit){
     socket.emit("suit:" + suit);
+    tableState.trump = suit;
+    RefreshPlayerDisplays();
     $( "#divSelectSuit" ).hide();
 }
 function ShowSelectSuit(){
