@@ -95,21 +95,46 @@
              </div>
              <div id="divHandRight"  class="col-2 col-sm-1 col-md-1 col-lg-1 col-xl-1 hand vhand-compact" style="text-align:right;" ></div>
          </div>
-        <div class="row fixed-bottom" style="height:20vh">
-             <div id="divHand" class="col-sm  hand hhand-compact active-hand" >
+
+        <div class="fixed-bottom" >
+            <div class="row">
+                <div id="playerNameSouth" class="col player-name"></div>
+            </div>
+            <div class="row" style="height:15vh">
+                <div id="divHand" class="col-sm  hand hhand-compact active-hand" ></div>
             </div>
         </div>
     </div>
 
     <div id="divBid" class="modal" style="display:none;">
          <div class="modal-dialog modal-dialog-centered" >
-             <div class="modal-content" style="background-color:transparent;">
+             <div class="modal-content-bid">
                 <table>
                     <tr>
-                       <td><div id="bidStatusMessage" class="modal-title" style="font-size:3vh;color:white"></div></td>
+                       <td><div id="bidStatusMessage" class="modal-title-bid-message"></div></td>
                     </tr>
                     <tr>
                        <td><div id="bidOptions" style="z-index:6;"></div></td>
+                    </tr>
+                </table>
+             </div>
+         </div>
+    </div>
+    <div id="divSelectSuit" class="modal" style="display:none;">
+         <div class="modal-dialog modal-dialog-centered" >
+             <div class="modal-content-bid">
+
+                <table>
+                    <tr>
+                       <td><div class="modal-title-bid-message" col-span="2">Select a suit...</div></td>
+                    </tr>
+                    <tr>
+                       <td><img src="../static/img/diamonds.png" class="img-suit-card"></td>
+                        <td><img src="../static/img/clubs.png" class="img-suit-card"></td>
+                    </tr>
+                     <tr>
+                       <td><img src="../static/img/hearts.png" class="img-suit-card"></td>
+                        <td><img src="../static/img/spades.png" class="img-suit-card"></td>
                     </tr>
                 </table>
              </div>

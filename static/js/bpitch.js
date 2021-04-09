@@ -1,4 +1,6 @@
 function DealCards(){
+    RefreshPlayerDisplays();
+
     AddCardToHand('AS', 'divHand');
     AddCardToHand('KS', 'divHand');
     AddCardToHand('QS', 'divHand');
@@ -24,6 +26,10 @@ SetBidTurn(1,5);
 }
 function StartGame(){
 
+}
+
+function RefreshPlayerDisplays(){
+    $( "#playerNameSouth" ).html(username + " &#8226 " + theBid);
 }
 
 function SetBidTurn(playerID, minBid) {
@@ -93,11 +99,17 @@ function CreateBidButton(txt, enabled, val){
     btn.innerHTML = txt;
     return btn;
 }
+var theBid =0;
 function SendBid(bid){
 
     $( "#divBid" ).hide();
     var strBid = "bid:" + bid;
     socket.emit(strBid);
+    theBid = bid;
+    RefreshPlayerDisplays();
+
+     $( "#divSelectSuit" ).show();
+
 }
 function AddCardToHand(card, hand){
     var container = document.getElementById(hand);

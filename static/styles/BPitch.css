@@ -27,6 +27,38 @@ body {
 .playedCardBottom{
 	margin-top:0vh;
 }
+.modal-content-bid {
+    position: relative;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    width: 100%;
+    pointer-events: auto;
+    background-color: transparent;
+    background-clip: padding-box;
+    outline: 0;
+}
+.player-name{
+	color:white;
+	font-weight: bold;
+	font-size: 3vh;
+}
+
+
+.modal-title-bid-message {
+    margin-bottom: 0;
+    line-height: 1.5;
+	font-size:3vh;
+	color:white
+}
+
+.img-suit-card{
+	height:6vh;
+	border: 1px solid black;
+	background-color:white;
+	border-radius: 25px;
+}
 
 /*body {
 	position:relative;
