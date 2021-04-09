@@ -20,7 +20,6 @@ img.pcard {
 
 .top-hand{}
 
-
 /*
  * A horizontal hand, class="hand hhand".  The enitire pcard is visible.
  */
@@ -60,10 +59,29 @@ img.pcard {
 	padding-top: 10px;
 }
 .hhand-compact img.pcard { 
-	margin-left: -52px;
+	margin-left: -5vh;
 	padding-top: 10px;
 }
 .hhand-compact.active-hand img.pcard:hover { 
+	padding-top: 0px;
+	padding-bottom: 10px;
+}
+
+/*
+ * An extra compact horizontal hand.  Only the last pcard is entirely visible.
+ */
+.hhand-xcompact {
+	display: inline-block;
+}
+.hhand-xcompact img.pcard:first-child {
+	margin-left: 0px;
+	padding-top: 10px;
+}
+.hhand-xcompact img.pcard {
+	margin-left: -8vh;
+	padding-top: 10px;
+}
+.hhand-xcompact.active-hand img.pcard:hover {
 	padding-top: 0px;
 	padding-bottom: 10px;
 }

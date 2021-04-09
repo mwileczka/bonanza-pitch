@@ -5,26 +5,65 @@ var tableState = {theBid: 0, trump:'', dealer:0, lead:0,
         {hand:6, played:'',bid:-1,dealer:false,lead:false,username:'Ben'},
         {hand:6, played:'',bid:-1,dealer:false,lead:false,username:'Mike'}
     ]
-    , score:[0,0], points:[0,0], deck_ct:0};
+    , score:[0,0], points:[0,0], deck_cnt:0, kitty_cnt:0};
 
 function StartGame(){
-    RefreshTable(tableState);
-}
-function RefreshTable(state){
-    //South Seat
-    RefreshPlayerDisplay(state.seats[0],'playerNameSouth');
-    //West Seat
-    DealHand('divHandWest', state.seats[1].hand);
-    RefreshPlayerDisplay(state.seats[1],'playerNameWest');
-    //North Seat
-    DealHand('divHandNorth', state.seats[2].hand);
-    RefreshPlayerDisplay(state.seats[2],'playerNameNorth');
-    //East Seat
-    DealHand('divHandEast', state.seats[3].hand);
-    RefreshPlayerDisplay(state.seats[3],'playerNameEast');
+    //RefreshTable(tableState);
 
 }
-function DealHand(handName, ct){
+function RefreshTable(state){
+    var westSeat = seat+1;
+    var northSeat = seat+2;
+    var eastSeat = seat+3;
+
+    if (westSeat>3) westSeat -=4
+    if (northSeat>3) northSeat -=4
+    if (eastSeat>3) eastSeat -=4
+
+    //South Seat
+    RefreshPlayerDisplay(state.seats[seat],'playerNameSouth');
+    //West Seat
+    DealHiddenHand('divHandWest', state.seats[westSeat].hand);
+    RefreshPlayerDisplay(state.seats[westSeat],'playerNameWest');
+    //North Seat
+    DealHiddenHand('divHandNorth', state.seats[northSeat].hand);
+    RefreshPlayerDisplay(state.seats[northSeat],'playerNameNorth');
+    //East Seat
+    DealHiddenHand('divHandEast', state.seats[eastSeat].hand);
+    RefreshPlayerDisplay(state.seats[eastSeat],'playerNameEast');
+
+    RefreshKitty(state.kitty_cnt);
+}
+function OnRequestBid(req_bid){
+
+}
+function RefreshKitty(ct){
+    var k = document.getElementById('divKitty');
+    if (k.childElementCount !== ct)
+    {
+        k.innerHTML= "";
+        var i = 0;
+        for (i = 0 ; i< ct ; i++){
+            AddCardToHand('RED_BACK', 'divKitty');
+        }
+    }
+
+
+
+}
+
+
+function DealHand(hand){
+    var h = document.getElementById('divHandSouth');
+    h.innerHTML= "";
+
+    var i = 0;
+    for (i = 0 ; i < hand.cards.length ;i++) {
+        AddCardToHand(hand.cards[i], 'divHandSouth');
+    }
+}
+
+function DealHiddenHand(handName, ct){
     var hand = document.getElementById(handName);
     if(hand.childElementCount !== ct){
         hand.innerHTML= "";
