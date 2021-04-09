@@ -57,7 +57,7 @@
     </script>
   </head>
 
-  <body class="text-center" onload='DealCards()'>
+  <body class="text-center" onload='ShowSelectSuit()'>
   user={{ session['username'] }}  table={{ session['table'] }}  seat={{ session['seat'] }}
   <button type="button" id="deal" class="btn btn-info">Deal</button>
   <button type="button" class="btn btn-danger" onclick=leave_table()>Leave</button>
@@ -126,15 +126,15 @@
 
                 <table>
                     <tr>
-                       <td><div class="modal-title-bid-message" col-span="2">Select a suit...</div></td>
+                       <td colspan="2"><div class="modal-title-bid-message">Select a suit...</div></td>
                     </tr>
                     <tr>
-                       <td><img src="../static/img/diamonds.png" class="img-suit-card"></td>
-                        <td><img src="../static/img/clubs.png" class="img-suit-card"></td>
+                       <td><img src="../static/img/diamonds.png" class="img-suit-card" onclick="OnSelectSuit('D')"></td>
+                        <td><img src="../static/img/clubs.png" class="img-suit-card" onclick="OnSelectSuit('C')"></td>
                     </tr>
                      <tr>
-                       <td><img src="../static/img/hearts.png" class="img-suit-card"></td>
-                        <td><img src="../static/img/spades.png" class="img-suit-card"></td>
+                       <td><img src="../static/img/hearts.png" class="img-suit-card" onclick="OnSelectSuit('H')"></td>
+                        <td><img src="../static/img/spades.png" class="img-suit-card" onclick="OnSelectSuit('S')"></td>
                     </tr>
                 </table>
              </div>

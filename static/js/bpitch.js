@@ -18,7 +18,7 @@ function DealCards(){
     for (i = 0 ; i < 6 ; i++){
         AddCardToHand('RED_BACK', 'divHandRight');
     }
-SetBidTurn(1,5);
+//SetBidTurn(1,5);
     // SetPlayCard("3C", "playedCardTop");
     // SetPlayCard("4C", "playedCardBottom");
     //  SetPlayCard("5C", "playedCardLeft");
@@ -108,8 +108,13 @@ function SendBid(bid){
     theBid = bid;
     RefreshPlayerDisplays();
 
-     $( "#divSelectSuit" ).show();
-
+}
+function OnSelectSuit(suit){
+    socket.emit("suit:" + suit);
+    $( "#divSelectSuit" ).hide();
+}
+function ShowSelectSuit(){
+    $( "#divSelectSuit" ).show();
 }
 function AddCardToHand(card, hand){
     var container = document.getElementById(hand);
