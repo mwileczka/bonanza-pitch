@@ -22,13 +22,10 @@
         $(document).ready(function(){
             socket.on('connect', function() {
                 console.log(socket.id)
-                socket.emit('join', {});
             });
             socket.on('status', function(data) {
                 $('#chat').val($('#chat').val() + '<' + data.msg + '>\n');
                 $('#chat').scrollTop($('#chat')[0].scrollHeight);
-
-
             });
             socket.on('message', function(data) {
                 $('#chat').val($('#chat').val() + data.msg + '\n');
@@ -37,7 +34,9 @@
             socket.on('table', function(data) {
                 console.log('table', data)
             });
-
+            socket.on('hand', function(data) {
+                console.log('hand', data)
+            });
 
             $('#send').click(function(e) {
                     text = $('#text').val();

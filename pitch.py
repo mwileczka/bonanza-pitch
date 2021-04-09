@@ -49,7 +49,8 @@ class Seat:
             'hand': len(self.hand),
             'played': self.played,
             'bid': self.bid,
-            'kept': self.kept
+            'kept': self.kept,
+            'name': self.player.username if self.player else None
         }
 
     def get_hand_json(self):
