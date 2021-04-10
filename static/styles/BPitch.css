@@ -1,6 +1,6 @@
-html { background-color:#800080; }
+html { background-image: url("../img/purple-felt.jpg"); }
 body {
-	background-color:#800080;
+	background-color: transparent;
 }
 
 .chatIcon{
