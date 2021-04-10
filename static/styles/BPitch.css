@@ -48,19 +48,20 @@ body {
 	width:100%;
 }
 .player-name-west{
-	/*transform-origin:bottom left;*/
+	transform-origin:top left;
 	position: absolute;
     top: 50%;
     left: 50%;
-	transform:  translateX(-50%) translateY(-50%) rotate(90deg);
-
+	transform:    rotate(90deg) translateX(15vh) translateY(-1vh);
+	/*transform:  translateY(15vh) rotate(90deg);*/
 }
 
 .player-name-east{
+	transform-origin:top left;
 	position: absolute;
     top: 50%;
     left: 50%;
-	transform:  translateX(-50%) translateY(-50%) rotate(-90deg);
+	transform: rotate(-90deg) translateX(-30vh) translateY(-3vh)  ;
 }
 
 .modal-title-bid-message {

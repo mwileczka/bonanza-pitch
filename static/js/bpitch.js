@@ -8,7 +8,7 @@ var tableState = {theBid: 0, trump:'', dealer:0, lead:0,
     , score:[0,0], points:[0,0], deck_cnt:0, kitty_cnt:0};
 
 function StartGame(){
-    //RefreshTable(tableState);
+    RefreshTable(tableState);
 
 }
 function RefreshTable(state){
@@ -71,11 +71,13 @@ function DealHiddenHand(handName, ct){
 }
 
 function RefreshPlayerDisplay(seat, displayName){
-    var str = seat.username
+    var str = '';
+    if (seat.name !== null) str += seat.name;
+
     if (seat.bid === 0){
-        str +=+" &bull; Pass";
+        str += " &bull; Pass";
     }
-    else if (seat.bid > 0){
+    else if (seat.bid !== null && seat.bid > 0){
         str += " &bull; " + seat.bid;
     }
     if (tableState.trump === 'S') str += " &bull; &spadesuit;"
