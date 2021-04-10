@@ -1,7 +1,10 @@
 #!/usr/bin/python3
+import abc
 import random
 import pprint
 from enum import Enum, unique, auto
+
+from abc import ABC
 
 
 class Deck(list):
@@ -59,11 +62,12 @@ class Seat:
         }
 
     def tx(self, event, args):
-        if self.player and self.player.ws_token:
-            base_tx(self.player.ws_token, event, args)
+        if self.player:
+            self.player.tx(event, args)
 
     def tx_hand(self):
         self.tx('hand', self.get_hand_json())
+
 
 class Table:
     @unique
@@ -76,7 +80,8 @@ class Table:
         WaitDeal = auto()
 
     def tx(self, event, args):
-        base_tx(self.id, event, args)
+        for seat in self.seats:
+            seat.tx(event, args)
 
     def __init__(self, id=None):
         self.trump = None
@@ -104,6 +109,12 @@ class Table:
             'deck_cnt': len(self.deck),
             'kitty_cnt': len(self.kitty)
         }
+
+    def add_bots(self):
+        for seat in self.seats:
+            if not seat.player:
+                seat.player = BotPlayer()
+        self.update()
 
     def deal(self):
         self.deck.reset()
@@ -163,19 +174,26 @@ class Table:
                 seat.tx_hand()
 
 
-class Player:
+class Player(ABC):
+    def __init__(self):
+        self.username = None
 
-    def __init__(self, username):
-        self.session_token = None
-        self.ws_token = None
+    @abc.abstractmethod
+    def tx(self, event, args):
+        pass
+
+
+class BotPlayer(Player):
+    inc = 1
+
+    def __init__(self, username=None):
+        if not username:
+            username = f"Bot{BotPlayer.inc}"
+            BotPlayer.inc += 1
         self.username = username
 
     def tx(self, event, args):
-        base_tx(self.ws_token, event, args)
-
-
-def base_tx(to, event, args):
-    print(to, event, args)
+        pass
 
 
 if __name__ == '__main__':

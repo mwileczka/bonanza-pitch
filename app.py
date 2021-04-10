@@ -4,7 +4,7 @@ import flask_socketio
 
 import pitch
 from flask_session import Session
-from pitch import Table, Deck, Player
+from pitch import Table, Deck, Player, BotPlayer
 from threading import Lock
 import flask
 
@@ -50,6 +50,16 @@ def table():
             return redirect(url_for('index'))
 
 
+class WebPlayer(Player):
+    def __init__(self, username, session_token, ws_token):
+        self.session_token = session_token
+        self.ws_token = ws_token
+        self.username = username
+
+    def tx(self, event, args):
+        socketio.emit(event, args, to=self.ws_token, namespace='/table')
+
+
 class TableNamespace(Namespace):
     def on_connect(self):
         table_name = session.get('table')
@@ -63,7 +73,7 @@ class TableNamespace(Namespace):
         if username in players:
             player = players[username]
         else:
-            player = Player(username)
+            player = WebPlayer(username, session.sid, request.sid)
             players[username] = player
 
         if player.session_token and player.session_token != session.sid:
@@ -148,6 +158,12 @@ class TableNamespace(Namespace):
         t = tables[table_name]
         t.deal()
 
+    def on_add_bots(self):
+        table_name = session.get('table')
+        t = tables[table_name]
+        t.add_bots()
+
+
 class LobbyNamespace(Namespace):
     def on_req_lobby(self):
         print('on_req_lobby')
@@ -166,13 +182,6 @@ class LobbyNamespace(Namespace):
 
 socketio.on_namespace(TableNamespace('/table'))
 socketio.on_namespace(LobbyNamespace('/lobby'))
-
-def sio_tx(to, event, args):
-    print('sio_tx', to, event, args)
-    socketio.emit(event, args, to=to, namespace='/table')
-
-# override the transmitter to use socketio
-pitch.base_tx = sio_tx
 
 if __name__ == '__main__':
     socketio.run(app)
