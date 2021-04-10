@@ -16,9 +16,9 @@ function RefreshTable(state){
     var northSeat = seat+2;
     var eastSeat = seat+3;
 
-    if (westSeat>3) westSeat -=4
-    if (northSeat>3) northSeat -=4
-    if (eastSeat>3) eastSeat -=4
+    if (westSeat>3) westSeat -=4;
+    if (northSeat>3) northSeat -=4;
+    if (eastSeat>3) eastSeat -=4;
 
     //South Seat
     RefreshPlayerDisplay(state.seats[seat],'playerNameSouth');
@@ -35,23 +35,19 @@ function RefreshTable(state){
     RefreshKitty(state.kitty_cnt);
 }
 function OnRequestBid(req_bid){
-
+    SetBidOptions(0);
+    document.getElementById('divBid').show();
 }
 function RefreshKitty(ct){
     var k = document.getElementById('divKitty');
-    if (k.childElementCount !== ct)
-    {
-        k.innerHTML= "";
+    if (k.childElementCount !== ct) {
+        k.innerHTML = "";
         var i = 0;
-        for (i = 0 ; i< ct ; i++){
+        for (i = 0; i < ct; i++) {
             AddCardToHand('RED_BACK', 'divKitty');
         }
     }
-
-
-
 }
-
 
 function DealHand(hand){
     var h = document.getElementById('divHandSouth');
@@ -161,16 +157,13 @@ function CreateBidButton(txt, enabled, val){
 function SendBid(bid){
 
     $( "#divBid" ).hide();
-    var strBid = "bid:" + bid;
-    socket.emit(strBid);
+    socket.emit('bid', bid);
     tableState.theBid = bid;
-    RefreshPlayerDisplays();
 
 }
 function OnSelectSuit(suit){
-    socket.emit("suit:" + suit);
+    socket.emit('suit', suit);
     tableState.trump = suit;
-    RefreshPlayerDisplays();
     $( "#divSelectSuit" ).hide();
 }
 function ShowSelectSuit(){
@@ -181,8 +174,15 @@ function AddCardToHand(card, hand){
     var img = document.createElement("img");
     img.setAttribute("src", "../static/cards/" + card + ".svg")
     img.setAttribute("class", "pcard")
+    img.onclick = function(){OnCardClick(card, hand);};
     container.appendChild(img);
 }
+function OnCardClick(theCard, hand){
+    if (hand==='divHandSouth'){
+        socket.emit('play', {card: theCard});
+    }
+}
+
 function SetPlayCard(card, elem){
     var container = document.getElementById(elem);
     var img = document.createElement("img");
