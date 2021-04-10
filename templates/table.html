@@ -43,10 +43,10 @@
                 console.log('hand', data)
                 OnRequestBid(data);
             });
+
             socket.on('hand', function(data) {
                 console.log('hand', data)
             });
-
 
             $('#send').click(function(e) {
                     text = $('#text').val();
