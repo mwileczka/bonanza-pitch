@@ -3,9 +3,10 @@ import abc
 import random
 import pprint
 from enum import Enum, unique, auto
-
 from abc import ABC
 
+def next_seat(idx):
+    return 0 if idx >= 3 else idx + 1
 
 class Deck(list):
     card_set = [f'{x}{y}' for y in 'CHSD' for x in '23456789TJQKA']
@@ -41,7 +42,7 @@ class Seat:
     def __init__(self, idx=None, id=None):
         self.hand = Deck([])
         self.played = None
-        self.bid = 0
+        self.bid = -1
         self.idx = idx
         self.id = id
         self.kept = 0
@@ -79,6 +80,12 @@ class Table:
         WaitTrick = auto()
         WaitDeal = auto()
 
+    def get_lobby_json(self):
+        return {
+            'name': self.id,
+            'seats': [x.player.username if x.player else None for x in self.seats]
+        }
+
     def tx(self, event, args):
         for seat in self.seats:
             seat.tx(event, args)
@@ -94,6 +101,7 @@ class Table:
         self.state = Table.State.WaitDeal
         self.id = id
         self.kitty = Deck([])
+        self.turn = 0
 
     def get_json(self):
         return {
@@ -107,14 +115,9 @@ class Table:
             'score': self.score,
             'points': self.points,
             'deck_cnt': len(self.deck),
-            'kitty_cnt': len(self.kitty)
+            'kitty_cnt': len(self.kitty),
+            'turn': self.turn
         }
-
-    def add_bots(self):
-        for seat in self.seats:
-            if not seat.player:
-                seat.player = BotPlayer()
-        self.update()
 
     def deal(self):
         self.deck.reset()
@@ -134,10 +137,21 @@ class Table:
         self.points[1] = 0
         self.trump = None
 
+        self.turn = next_seat(self.dealer)
+
         self.update()
-        # self.send('req_bid', {'min': 1})
+
+        self.req_bid()
+
+    def req_bid(self):
+        highest_bid = max([ x.bid for x in self.seats])
+
+        min_bid = max(highest_bid + 1, 1)
 
         self.state = Table.State.WaitBid
+
+        self.seats[self.turn].player.req_bid(min_bid)
+
 
     def end_hand(self):
         if self.dealer is None or self.dealer >= 3:
@@ -148,7 +162,7 @@ class Table:
     def suit(self):
         pass
 
-    def bid(self, data):
+    def bid(self, seat_idx, bid):
         pass
 
     def discard(self):
@@ -182,22 +196,38 @@ class Player(ABC):
     def tx(self, event, args):
         pass
 
+    def req_bid(self, min):
+        self.tx('req_bid', {'min': min})
 
-class BotPlayer(Player):
+
+class OldBotPlayer(Player):
     inc = 1
 
-    def __init__(self, username=None):
+    def __init__(self, table, seat_idx, username=None):
         if not username:
             username = f"Bot{BotPlayer.inc}"
             BotPlayer.inc += 1
         self.username = username
+        self.table = table
+        self.seat_idx = seat_idx
+
+
+    def rx(self, event, args):
+        # if event == 'req_bid':
+        #     bid = args['min']
+        #     if bid < 7:
+        #         bid = random.random() < .70
+        #     elif bid < 11:
+        #         bid = random.random() < .30
+        #     else:
+        #         bid = random.random() < .10
+        #
+        #     if bid:
+        #         t.bid(self.seat_idx, args['min'])
+        #     else:
+        #         t.bid(self.seat_idx, 0)
+
+        pass
 
     def tx(self, event, args):
         pass
-
-
-if __name__ == '__main__':
-    t = Table()
-    t.deal()
-    pprint.pprint(t.get_json())
-    pprint.pprint(t.seats[0].get_hand_json())

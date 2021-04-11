@@ -8,7 +8,7 @@ Table will have a name.
 User will have a username.
 When a user comes online they will be assigned a session ID
 
-# Landing Page
+# Lobby Page
 
 
 Display Tables and Seats
@@ -113,6 +113,7 @@ dialog:{
 ```
 req_bid:{
   min: int, 1-18
+  max: int, 1-19
 }
 ```
 

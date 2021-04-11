@@ -1,10 +1,13 @@
+import pprint
+
 from flask import Flask, render_template, request, redirect, url_for, session
 from flask_socketio import SocketIO, join_room, leave_room, emit, Namespace, rooms
 import flask_socketio
+from bot import BotPlayerClient
 
 import pitch
 from flask_session import Session
-from pitch import Table, Deck, Player, BotPlayer
+from pitch import Table, Deck, Player
 from threading import Lock
 import flask
 
@@ -19,8 +22,10 @@ Session(app)
 socketio = SocketIO(app, manage_session=False, async_mode="threading")
 
 tables = {}  # type: Dict[Table]
+tables['Matrix'] = Table('Matrix')
 
 players = {}
+bot_clients = {}
 
 thread = None
 thread_lock = Lock()
@@ -94,6 +99,8 @@ class TableNamespace(Namespace):
         t = tables.setdefault(table_name, Table(id=table_name))
         t.seats[seat].player = player
 
+        t.update()
+
     def on_text(self, message):
         table_name = session.get('table')
         username = session.get('username')
@@ -105,11 +112,14 @@ class TableNamespace(Namespace):
     def on_leave(self, message):
         table_name = session.get('table')
         username = session.get('username')
-        seat = session.get('seat')
-        print('left', username, table_name, seat)
+        seat_idx = session.get('seat')
+        print('left', username, table_name, seat_idx)
         leave_room(table_name)
         del session['table']
         del session['seat']
+
+        t = tables.get(table_name)
+        t.seats[seat_idx].player = None
 
         emit('status', {'msg': f'{username} has left the table.'}, room=table_name)
 
@@ -129,10 +139,9 @@ class TableNamespace(Namespace):
         print("Background thread started")
         count = 0
         while True:
-            socketio.sleep(5)
-            print("Background triggered")
-            count += 1
-            socketio.emit('status', {'msg': f'count is {count}'}, namespace=self.namespace)
+            socketio.sleep(1)
+
+            # socketio.emit('status', {'msg': f'count is {count}'}, namespace=self.namespace)
 
             if '/table' not in socketio.server.manager.rooms:
                 print('No more tables - Background thread stopped')
@@ -161,13 +170,22 @@ class TableNamespace(Namespace):
     def on_add_bots(self):
         table_name = session.get('table')
         t = tables[table_name]
-        t.add_bots()
+        for idx in range(0, 4):
+            if not t.seats[idx].player:
+                bot = BotPlayerClient(table_name, idx)
+                bot_clients[bot.username] = bot
 
+    def on_bid(self, args):
+        print("Got bid", args)
+        table_name = session.get('table')
+        username = session.get('username')
+        seat = session.get('seat')
+        t = tables[table_name]
 
 class LobbyNamespace(Namespace):
     def on_req_lobby(self):
         print('on_req_lobby')
-        emit('lobby', [{'name': 'Matrix', 'seats': [None, 'Laura', 'Mike', None]}])
+        emit('lobby', [t.get_lobby_json() for t in tables.values()])
 
     def on_disconnect(self):
         username = session.get('username')

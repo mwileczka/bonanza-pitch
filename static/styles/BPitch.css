@@ -1,4 +1,10 @@
-html { background-image: url("../img/purple-felt.jpg"); }
+html {
+	background-image: url("../img/purple-felt.jpg");
+	background-size: cover;
+	background-repeat: no-repeat;
+	background-position: center;
+}
+
 body {
 	background-color: transparent;
 }
