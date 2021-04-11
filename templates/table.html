@@ -88,8 +88,12 @@
         <div class="row" >
              <div id="divHandNorth" class="col-sm hand hhand-compact col-12" ></div>
         </div>
+
         <div class="row" style="height:10vh">
             <div id="playerNameNorth" class="col player-name"></div>
+        </div>
+         <div class="row" >
+             <div id="divMessage" class="col-sm player-name col-12" ></div>
         </div>
          <div class="row" style="height:50vh" >
 
@@ -134,19 +138,18 @@
         </div>
     </div>
 
-    <div id="divBid" class="modal" style="display:none;">
-         <div class="modal-dialog modal-dialog-centered" >
-             <div class="modal-content-bid">
-                <table>
-                    <tr>
-                       <td><div id="bidStatusMessage" class="modal-title-bid-message"></div></td>
-                    </tr>
-                    <tr>
-                       <td><div id="bidOptions" style="z-index:6;"></div></td>
-                    </tr>
-                </table>
+    <div id="divBid" class="modal" role="dialog" aria-hidden="true">
+        <div class="vertical-alignment-helper">
+            <div class="modal-dialog vertical-align-center" >
+             <div class="modal-content modal-content-bid">
+                 <div class="modal-body">
+                      <div id="bidOptions" style="z-index:6;"></div>
+                 </div>
+
              </div>
          </div>
+        </div>
+
     </div>
     <div id="divSelectSuit" class="modal" style="display:none;">
          <div class="modal-dialog modal-dialog-centered" >

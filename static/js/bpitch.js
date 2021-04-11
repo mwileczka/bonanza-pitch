@@ -8,8 +8,8 @@ var tableState = {theBid: 0, trump:'', dealer:0, lead:0,
     , score:[0,0], points:[0,0], deck_cnt:0, kitty_cnt:0};
 
 function StartGame(){
-    RefreshTable(tableState);
-
+    //RefreshTable(tableState);
+//OnRequestBid(0);
 }
 function RefreshTable(state){
     var westSeat = seat+1;
@@ -33,10 +33,16 @@ function RefreshTable(state){
     RefreshPlayerDisplay(state.seats[eastSeat],'playerNameEast');
 
     RefreshKitty(state.kitty_cnt);
+
+    if (state.turn !== seat)
+        document.getElementById('divMessage').innerHTML = 'Waiting for ' + state.seats[state.turn].name;
+    else
+        document.getElementById('divMessage').innerHTML = "";
+
 }
 function OnRequestBid(req_bid){
     SetBidOptions(0);
-    document.getElementById('divBid').show();
+     $('#divBid').show();
 }
 function RefreshKitty(ct){
     var k = document.getElementById('divKitty');
@@ -160,8 +166,6 @@ function SendBid(bid){
 
     $( "#divBid" ).hide();
     socket.emit('bid', bid);
-    tableState.theBid = bid;
-
 }
 function OnSelectSuit(suit){
     socket.emit('suit', suit);
