@@ -35,13 +35,14 @@ function RefreshTable(state){
     RefreshKitty(state.kitty_cnt);
 
     if (state.turn !== seat)
-        document.getElementById('divMessage').innerHTML = 'Waiting for ' + state.seats[state.turn].name;
+        $('#divMessage').html('Waiting for ' + state.seats[state.turn].name);
     else
-        document.getElementById('divMessage').innerHTML = "";
+        $('#divMessage').html("");
 
 }
 function OnRequestBid(req_bid){
-    SetBidOptions(0);
+    SetBidOptions(req_bid.min, req_bid.max);
+    $('#divMessage').html("Your turn to bid")
      $('#divBid').show();
 }
 function OnRequestSuit(data){
@@ -113,7 +114,7 @@ function SetBidTurn(playerID, minBid) {
 
     SetBidOptions(5);
 }
-function SetBidOptions(minBid){
+function SetBidOptions(minBid, maxBid){
     var options = document.getElementById("bidOptions");
     options.innerHTML="";
     var tbl = document.createElement("table");
@@ -131,7 +132,7 @@ function SetBidOptions(minBid){
         for (j = 0; j <=2; j++) {
             var td = document.createElement("td");
             var bid = (i*3) + j + 1;
-            var btn = CreateBidButton(bid, (bid >= minBid), bid);
+            var btn = CreateBidButton(bid, (bid >= minBid && bid <= maxBid), bid);
             td.appendChild(btn);
             tr.appendChild(td);
         }
@@ -143,7 +144,7 @@ function SetBidOptions(minBid){
     var tdMoon = document.createElement("td");
     tdMoon.setAttribute("colspan","2")
     row.appendChild(tdMoon);
-    var btnMoon = CreateBidButton("Shoot the Moon", true, 19);
+    var btnMoon = CreateBidButton("Shoot the Moon", (maxBid >= 19), 19);
     tdMoon.appendChild(btnMoon);
     var tdPass = document.createElement("td");
     row.appendChild(tdPass);
