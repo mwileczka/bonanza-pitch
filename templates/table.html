@@ -40,23 +40,27 @@
                 DealHand(data);
             });
             socket.on('req_bid', function(data) {
+                console.log('request bid', data)
                 OnRequestBid(data);
             });
             socket.on('req_suit', function(data) {
+                console.log('request suit', data)
                 OnRequestSuit(data);
             });
-
-            socket.on('hand', function(data) {
-                console.log('hand', data)
+            socket.on('req_deal', function(data) {
+                console.log('request deal', data)
+            });
+            socket.on('req_discard', function(data) {
+                console.log('request discard', data)
+            });
+            socket.on('req_play', function(data) {
+                console.log('request play', data)
             });
 
             $('#send').click(function(e) {
                     text = $('#text').val();
                     $('#text').val('');
                     socket.emit('text', {msg: text});
-            });
-            $('#play').click(function(e) {
-                    socket.emit('play', {card: "2H"});
             });
             $('#deal').click(function(e) {
                     socket.emit('deal');
