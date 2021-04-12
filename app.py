@@ -181,6 +181,15 @@ class TableNamespace(Namespace):
         username = session.get('username')
         seat = session.get('seat')
         t = tables[table_name]
+        t.bid(seat, args)
+
+    def on_suit(self, args):
+        print("Got suit", args)
+        table_name = session.get('table')
+        username = session.get('username')
+        seat = session.get('seat')
+        t = tables[table_name]
+        t.suit(args)
 
 class LobbyNamespace(Namespace):
     def on_req_lobby(self):

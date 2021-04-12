@@ -44,6 +44,10 @@ function OnRequestBid(req_bid){
     SetBidOptions(0);
      $('#divBid').show();
 }
+function OnRequestSuit(data){
+    $( "#divSelectSuit" ).show();
+}
+
 function RefreshKitty(ct){
     var k = document.getElementById('divKitty');
     if (k.childElementCount !== ct) {
@@ -171,9 +175,6 @@ function OnSelectSuit(suit){
     socket.emit('suit', suit);
     tableState.trump = suit;
     $( "#divSelectSuit" ).hide();
-}
-function ShowSelectSuit(){
-    $( "#divSelectSuit" ).show();
 }
 function AddCardToHand(card, hand){
     var container = document.getElementById(hand);

@@ -1,7 +1,7 @@
 # Definitions
 
 SEATS = 0,1,2,3
-TEAMS = 0,1
+TEAMS = 0,1   (0 is seats 0 & 2, 1 is seats 1 & 3)
 CARDS = 2H,3S,4D,5C
 
 Table will have a name.
@@ -28,28 +28,48 @@ Server will provide updates as other people sit or add tables.
 ```
 
 
+# Join a Table
+
+```
+POST
+url: 'http://<HOST>/table'
+data: {
+    username: str
+    table: str
+    seat: str (integer as string)
+}
+```
+This will create a cookie called `Session` to be used with the websocket.
+
+```
+namespace: '/table'
+headers:{
+    Session=<COOKIE_SESSION>
+}
+```
+Upon websocket connection, the client will start receiving data updates and requests.
+
+
 
 ```mermaid
 stateDiagram-v2
-  [*] --> ReqBid: Deal
-  ReqBid --> ReqBid: Bet
-  ReqBid --> ReqSuit: Won Bet
+  [*] --> ReqDeal: 4 Players
+  ReqDeal --> ReqBid: Deal (x4)
+  ReqBid --> ReqBid: Bid (non-winning)
+  ReqBid --> ReqSuit: Bid (winning)
   ReqSuit --> ReqDiscard: Suit
   ReqDiscard --> ReqPlay: Discard
-  ReqPlay --> ReqPlay: Play
-  ReqPlay --> Trick: Play (last)
-  Trick --> ReqPlay: delay
-  Trick --> EndOfHand: delay (last)
-  EndOfHand --> [*]: delay or all ack
-      
+  ReqPlay --> ReqPlay: Play (non-last)
+  ReqPlay --> Table: Play (last)
+  Table --> ReqPlay: delay
+  Table --> ReqDeal: End of Hand/Game    
 ```
 
 
 
 
 
-
-# Server to Client
+# Data
 
 ## Hand Update
 
@@ -57,7 +77,8 @@ Sent whenever cards are dealt, played, discarded, etc.
 Cards will be pre-sorted
 
 ```
-hand:{
+event: 'hand'
+args: {
   cards: [str (card), ...]
 }
 ```
@@ -67,25 +88,178 @@ hand:{
 Sent after every action
 
 ```
-table:{
+event: 'table'
+args: {
   trump: str (suit)
-  dealer: int (0-3)       (or use seat flag)
-  lead: int (0-3)       (or use seat flag)
+  dealer: int (0-3, none)
+  lead: int (0-3, none)
+  won: int (0-3, none)
+  bidder: int (0-3, none)
+  bid: int, -1 to 19 (-1=not bid, 0=passed, 1-18=bid, 19=moon)
   seats:[
     {
+      name: str
       hand: int (0-10)
       played: str (card)
-      bid: 0-19
-      dealer: bool        (or use index)
-      lead: bool          (or use index)
+      bid: int, -1 to 19 (-1=not bid, 0=passed, 1-18=bid, 19=moon)
+      kept: int (0-10)
+      state: int (0=disconnected, 1=ready, 2=waiting)
     },
     ...
   ]
   score: [int, int]
   points: [int, int]
+  cards_won: [
+    [ str (card), ...],
+    [...]
+  ]
   deck_cnt: int
+  kitty_cnt: int
 }
 ```
+
+# Table
+
+## Add Table
+
+```
+event: 'add_table'
+args: {
+  name: str
+}
+```
+
+## Remove Table
+
+```
+event: 'remove_table'
+args: {
+  name: str
+}
+```
+
+## Sit
+
+Automatic on websocket connect.
+
+## Leave
+
+Client sends to server to leave table.
+
+```
+event: 'leave'
+args: {}
+```
+
+## Bots
+
+Client sends to server to fill remaining seats with bots.
+
+```
+event: 'add_bots'
+args: {}
+```
+
+# Dealing
+
+## Request Deal
+
+Server sends to client requesting permission to continue dealing.
+This will happen after 4 players are seated,
+at the end if the hand, and at the end of the game.
+
+```
+event: 'req_deal'
+args: {
+    TBD
+}
+```
+## Deal
+
+```
+event: 'deal'
+args: {}
+```
+
+# Bidding
+
+## Request Bid
+
+Server sends when a client need to bid.
+
+```
+event: 'req_bid'
+args: {
+  min: int, 1-18
+  max: int, 1-19
+}
+```
+
+## Bid
+Client sends in response to a `req_bid`.
+
+```
+event: 'bid'
+args: int, 0=pass, 1-18, 19=moon 
+```
+
+# Suit Selection
+
+## Request Suit
+
+Server sends to client after winning the bid.
+
+```
+event: 'req_suit'
+args:
+```
+
+## Suit
+Client sends in response to a `req_suit`.
+
+```
+event: 'suit'
+args: str (suit)
+```
+
+
+# Discarding
+
+## Request Discard
+Server sends to client only if >6 trump cards after taking kitty.
+```
+event: 'req_discard'
+args: {}
+```
+
+## Discard
+Client sends to server to discard a single card.
+```
+event: 'discard'
+args: str (card)
+```
+
+# Playing
+
+## Request Play
+Server sends to client to request a card to play.
+
+```
+event: 'req_play'
+args: {
+  TBD
+}
+```
+
+## Play
+Client sends to server to play a card.
+```
+event: 'play'
+args: str (card)
+```
+
+
+# Utility
 
 ## Log
 
@@ -93,7 +267,9 @@ Sent as a game log for who played what and took tricks, score changes, etc.
 Show in a scrolling text box.
 
 ```
-log:{
+event: 'log'
+args: {
+  src: str
   msg: str
 }
 ```
@@ -103,100 +279,19 @@ log:{
 Alert user to problem with ok button (played invalid card, etc.)
 
 ```
-dialog:{
+event: 'dialog'
+args: {
   msg: str
 }
 ```
 
-## Request Bid
+
+
+# Admin & Debugging
+
+## Force Deal
 
 ```
-req_bid:{
-  min: int, 1-18
-  max: int, 1-19
-}
-```
-
-## Request Suit
-```
-req_suit:{
-  suit: str (suit)
-}
-```
-
-## Request Discard
-Only sent if >6 trump cards after taking kitty
-```
-req_discard:{
-  count: int, 1-10
-}
-```
-
-## Request Play
-```
-req_play:{
-  lead: str (suit)
-  trump: str (suit)
-}
-```
-
-## End of Trick
-NOTE: not sure we need this
-```
-trick:{
-  ???
-}
-```
-
-## Request Deal (End of Hand)
-
-Maybe show dialog with hand results, ask for OK to deal (continue)
-
-```
-req_deal:{
-  ???
-}
-```
-
-# Client to Server
-
-## Sit
-```
-sit:{
-  seat: int, 0-3, or null for no seat (stand up)
-}
-```
-
-## Bid
-```
-bid:{
-  bid: int, 0=pass, 1-18, 19=moon 
-}
-```
-
-## Suit
-```
-suit:{
-  suit: str (suit)
-}
-```
-
-## Discard
-```
-discard:{
-  cards: array of str (card)
-}
-```
-
-## Play
-```
-play:{
-  card: str (card)
-}
-```
-
-## Deal
-
-```
-deal:{}
+event: 'deal'
+args: {}
 ```

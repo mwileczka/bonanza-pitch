@@ -26,8 +26,12 @@ class Deck(list):
         random.shuffle(self)
 
     def draw(self, cnt=1):
-        x = self[-cnt:]
-        del self[-cnt:]
+        if cnt > 0:
+            x = self[-cnt:]
+            del self[-cnt:]
+        else:
+            x = self[0:-cnt]
+            del self[0:-cnt]
         return x
 
     def sort(self):
@@ -36,6 +40,18 @@ class Deck(list):
     @staticmethod
     def ordinal(card):
         return Deck.card_set.index(card)
+
+    def keep_suit(self, suit):
+        idx = 0
+        discarded = Deck([])
+        while idx < len(self):
+            if self[idx][1] == suit:
+                # is suit
+                idx += 1
+            else:
+                # not suit
+                discarded.append(self.pop(idx))
+        return discarded
 
 
 class Seat:
@@ -68,6 +84,12 @@ class Seat:
 
     def tx_hand(self):
         self.tx('hand', self.get_hand_json())
+
+    def reset_for_hand(self):
+        self.played = None
+        self.hand.clear()
+        self.bid = -1
+        self.kept = -1
 
 
 class Table:
@@ -119,23 +141,29 @@ class Table:
             'turn': self.turn
         }
 
+    def reset_for_hand(self):
+        self.turn = -1
+        self.kitty.clear()
+        self.trump = None
+        self.lead = None
+        self.points[0] = 0
+        self.points[1] = 0
+        for seat in self.seats:
+            seat.reset_for_hand()
+
     def deal(self):
+        self.reset_for_hand()
+
         self.deck.reset()
         self.deck.shuffle()
 
         self.kitty.clear()
 
         for seat in self.seats:
-            seat.hand.clear()
             seat.hand.extend(self.deck.draw(6))
             seat.hand.sort()
 
         self.kitty.extend(self.deck.draw(4))
-        self.kitty.sort()
-
-        self.points[0] = 0
-        self.points[1] = 0
-        self.trump = None
 
         self.turn = next_seat(self.dealer)
 
@@ -147,10 +175,11 @@ class Table:
         highest_bid = max([ x.bid for x in self.seats])
 
         min_bid = max(highest_bid + 1, 1)
+        max_bid = 19
 
         self.state = Table.State.WaitBid
 
-        self.seats[self.turn].player.req_bid(min_bid)
+        self.seats[self.turn].player.req_bid(min_bid, max_bid)
 
 
     def end_hand(self):
@@ -159,16 +188,93 @@ class Table:
         else:
             self.dealer += 1
 
-    def suit(self):
-        pass
+    def suit(self, s):
+        self.trump = s
+
+        self.seats[self.turn].hand.extend(self.kitty)
+        self.kitty.clear()
+
+        for seat in self.seats:
+            seat.hand.keep_suit(self.trump)
+            seat.kept = len(seat.hand)
+
+        discard = self.seats[self.turn].kept - 6
+        if discard > 0:
+            self.seats[self.turn].hand.sort()
+            self.seats[self.turn].hand.draw(-discard)
+            # TODO notify trump was discarded
+
+        for seat in self.seats:
+            draw = 6 - len(seat.hand)
+            seat.hand.extend(self.deck.draw(draw))
+            seat.hand.sort()
+            seat.played = None
+
+        self.update()
+
+        self.req_play()
+
+    def req_play(self):
+        self.state = Table.State.WaitPlay
+        self.seats[self.turn].player.req_play()
+
+    @property
+    def bids(self):
+        return [x.bid for x in self.seats]
+
+    @property
+    def turn_seat(self):
+        return self.seats[self.turn]
 
     def bid(self, seat_idx, bid):
-        pass
+        self.seats[seat_idx].bid = bid
+        self.turn = next_seat(self.turn)
+
+        win_bid = 0
+        win_idx = -1
+        bidding = 0
+        for idx in range(0,4):
+            b = self.seats[idx].bid
+            if b < 0:
+                # hasn't bid yet
+                bidding += 1
+            elif b == 0:
+                # passed
+                pass
+            elif b <= 18:
+                # still bidding
+                bidding += 1
+                if b > win_bid:
+                    win_bid = b
+                    win_idx = idx
+            else:
+                # moon
+                win_bid = b
+                win_idx = idx
+                bidding = 1
+                break
+
+        if bidding > 1:
+            # more than one still bidding
+            print(f"There are {bidding} seats left bidding")
+            while self.seats[self.turn].bid == 0:
+                self.turn = next_seat(self.turn)
+
+            self.req_bid()
+        else:
+            # there is a winning bid
+            print(f'Seat {win_idx} won the bid for {win_bid}')
+            self.turn = win_idx
+            self.req_suit()
+
+    def req_suit(self):
+        self.state = Table.State.WaitSuit
+        self.seats[self.turn].player.req_suit()
 
     def discard(self):
         pass
 
-    def play_card(self, seat, card):
+    def play_card(self, seat_idx, card):
         pass
 
     def get_seat(self, uid):
@@ -196,38 +302,16 @@ class Player(ABC):
     def tx(self, event, args):
         pass
 
-    def req_bid(self, min):
-        self.tx('req_bid', {'min': min})
+    def req_bid(self, min, max):
+        self.tx('req_bid', {
+            'min': min,
+            'max': max
+        })
 
+    def req_suit(self):
+        self.tx('req_suit', {})
 
-class OldBotPlayer(Player):
-    inc = 1
+    def req_play(self):
+        self.tx('req_play', {
 
-    def __init__(self, table, seat_idx, username=None):
-        if not username:
-            username = f"Bot{BotPlayer.inc}"
-            BotPlayer.inc += 1
-        self.username = username
-        self.table = table
-        self.seat_idx = seat_idx
-
-
-    def rx(self, event, args):
-        # if event == 'req_bid':
-        #     bid = args['min']
-        #     if bid < 7:
-        #         bid = random.random() < .70
-        #     elif bid < 11:
-        #         bid = random.random() < .30
-        #     else:
-        #         bid = random.random() < .10
-        #
-        #     if bid:
-        #         t.bid(self.seat_idx, args['min'])
-        #     else:
-        #         t.bid(self.seat_idx, 0)
-
-        pass
-
-    def tx(self, event, args):
-        pass
+        })

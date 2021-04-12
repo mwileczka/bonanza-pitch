@@ -78,15 +78,11 @@ class BotPlayerClient:
                 bid = 0
         elif r > .20:
             bid = 0
-        self.tx('bid', {
-            'bid': bid
-        })
+        self.tx('bid', bid)
 
 
     def on_req_suit(self, args):
-        self.tx('suit', {
-            'suit': 'H'
-        })
+        self.tx('suit', 'H')
 
     def on_req_play(self, args):
         pass

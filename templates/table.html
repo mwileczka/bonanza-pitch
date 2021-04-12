@@ -40,8 +40,10 @@
                 DealHand(data);
             });
             socket.on('req_bid', function(data) {
-                console.log('hand', data)
                 OnRequestBid(data);
+            });
+            socket.on('req_suit', function(data) {
+                OnRequestSuit(data);
             });
 
             socket.on('hand', function(data) {
