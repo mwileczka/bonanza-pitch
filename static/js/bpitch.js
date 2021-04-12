@@ -188,7 +188,7 @@ function AddCardToHand(card, hand){
 }
 function OnCardClick(theCard, hand){
     if (hand==='divHandSouth'){
-        socket.emit('play', {card: theCard});
+        socket.emit('play', theCard);
     }
 }
 
