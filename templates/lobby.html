@@ -2,54 +2,54 @@
 <html lang="en">
 
 <head>
-  <title>Bonanza Pitch</title>
-  <!--Link to CSS -->
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
-  <link href="{{ url_for('static', filename='styles/style.css') }}" rel="stylesheet">
+    <title>Bonanza Pitch</title>
+    <!--Link to CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
+          integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+    <link href="{{ url_for('static', filename='styles/style.css') }}" rel="stylesheet">
     <script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
 
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.min.js"></script>
     <script type="text/javascript" charset="utf-8">
         const socket = io("/lobby");
-        $(document).ready(function(){
+        $(document).ready(function () {
             socket.on("connect", () => {
-               console.log(socket.id)
+                console.log(socket.id)
                 socket.emit("req_lobby")
             });
 
-            socket.on('lobby', function(data) {
+            socket.on('lobby', function (data) {
                 console.log(data)
-                for (let idx = 0; idx < 4; idx++){
-                    if (data[0]['seats'][idx] == null){
-                        $('#seat'+idx).text('Sit (Team ' + (idx % 2 + 1) + ')')
-                        $('#seat'+idx).prop('disabled', false);
-                    }else{
-                        $('#seat'+idx).text(data[0]['seats'][idx] + ' (Team ' + (idx % 2 + 1) + ')')
-                        $('#seat'+idx).prop('disabled', true);
+                for (let idx = 0; idx < 4; idx++) {
+                    if (data[0]['seats'][idx] == null) {
+                        $('#seat' + idx).text('AVAILABLE - Team ' + (idx % 2 + 1))
+                        $('#seat' + idx).prop('disabled', false);
+                    } else {
+                        $('#seat' + idx).text(data[0]['seats'][idx] + ' - Team ' + (idx % 2 + 1))
+                        $('#seat' + idx).prop('disabled', true);
                     }
                 }
             });
         });
 
 
-
-
-
     </script>
 </head>
 
 <body class="text-center">
-  <form class="form-signin" action="{{url_for('table')}}" method="POST">
-    <h1 class="h2 mb-3 font-weight-normal">Bonanza Pitch</h1><br><br>
+<form class="form-signin" action="{{ url_for('table') }}" method="POST">
+    <h1>Bonanza Pitch</h1><br>
+    <label for="username">User</label>
+    <input type="text" id="username" name="username" class="form-control"
+           value="{{ session.get('username','') }}" required autofocus><br>
+    <h2>Matrix</h2>
+    <input type="hidden" id="table" name="table" class="form-control" value="Matrix" readonly required><br>
+    <button id="seat0" class="btn btn-lg btn-primary btn-block" name="seat" value="0" disabled>Sit - Team 1</button>
+    <button id="seat1" class="btn btn-lg btn-primary btn-block" name="seat" value="1" disabled>Sit - Team 2</button>
+    <button id="seat2" class="btn btn-lg btn-primary btn-block" name="seat" value="2" disabled>Sit - Team 1</button>
+    <button id="seat3" class="btn btn-lg btn-primary btn-block" name="seat" value="3" disabled>Sit - Team 2</button>
 
-    <input type="text" id="username" name="username" class="form-control" placeholder="Username" value="{{ session.get('username','') }}" required autofocus><br>
-      <input type="text" id="table" name="table" class="form-control" placeholder="Table" value="Matrix" readonly required><br>
-    <button id="seat0" class="btn btn-lg btn-primary btn-block" name="seat" value="0" disabled>Seat 1 (Team 1)</button>
-      <button id="seat1" class="btn btn-lg btn-primary btn-block" name="seat" value="1" disabled>Seat 2 (Team 2)</button>
-      <button id="seat2" class="btn btn-lg btn-primary btn-block" name="seat" value="2" disabled>Seat 3 (Team 1)</button>
-      <button id="seat3" class="btn btn-lg btn-primary btn-block" name="seat" value="3" disabled>Seat 4 (Team 2)</button>
-
-  </form>
+</form>
 </body>
 
 </html>

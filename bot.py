@@ -6,6 +6,8 @@ import socketio
 import requests
 from pprint import pprint
 
+from pitch import Deck
+
 
 class BotPlayerClient:
     inc = 1
@@ -20,8 +22,8 @@ class BotPlayerClient:
         self.sio = socketio.Client()
         self.url = url
         self.ns = '/table'
-        self.table = None
-        self.hand = None
+        self.table = None  # type: Dict
+        self.hand = None  # type: Deck
 
         r = requests.post(self.url, {
             'username': self.username,
@@ -39,10 +41,12 @@ class BotPlayerClient:
         self.sio.on('req_bid', self.on_req_bid, namespace=self.ns)
         self.sio.on('req_suit', self.on_req_suit, namespace=self.ns)
         self.sio.on('req_play', self.on_req_play, namespace=self.ns)
+        self.sio.on('req_deal', self.on_req_deal, namespace=self.ns)
+        self.sio.on('req_discard', self.on_req_discard, namespace=self.ns)
 
         print("connecting")
-        self.sio.connect('http://localhost:5000', namespaces=self.ns, headers={'Cookie': 'session=' + self.cookie_session})
-
+        self.sio.connect('http://localhost:5000', namespaces=self.ns,
+                         headers={'Cookie': 'session=' + self.cookie_session})
 
     def disconnect(self):
         self.sio.disconnect()
@@ -50,11 +54,8 @@ class BotPlayerClient:
     def tx(self, event, args):
         self.sio.emit(event, args, namespace=self.ns)
 
-
     def on_connect(self):
         print('connection established')
-
-
 
     def on_disconnect(self):
         print('disconnected from server')
@@ -64,7 +65,7 @@ class BotPlayerClient:
         pprint(args)
 
     def on_hand(self, args):
-        self.hand = args
+        self.hand = Deck(args['cards'])
         pprint(args)
 
     def on_req_bid(self, args):
@@ -80,15 +81,21 @@ class BotPlayerClient:
             bid = 0
         self.tx('bid', bid)
 
-
     def on_req_suit(self, args):
-        self.tx('suit', 'H')
+        self.tx('suit', self.hand.suit_highest_cnt())
 
     def on_req_play(self, args):
+        self.tx('play', args[random.randint(0, len(args) - 1)])
+
+    def on_req_discard(self, args):
+        self.tx('discard', self.hand[random.randint(0, len(self.hand) - 1)])
+
+    def on_req_deal(self, args):
+        # TODO
         pass
 
 
 if __name__ == '__main__':
-    bot = BotPlayerClient('Matrix',2)
+    bot = BotPlayerClient('Matrix', 2)
     sleep(5)
     bot.disconnect()

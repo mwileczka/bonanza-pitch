@@ -57,8 +57,10 @@ stateDiagram-v2
   ReqDeal --> ReqBid: Deal (x4)
   ReqBid --> ReqBid: Bid (non-winning)
   ReqBid --> ReqSuit: Bid (winning)
-  ReqSuit --> ReqDiscard: Suit
-  ReqDiscard --> ReqPlay: Discard
+  ReqSuit --> ReqDiscard: Suit (> 6)
+  ReqSuit --> ReqPlay: Suit (<= 6)
+  ReqDiscard --> ReqPlay: Discard (<= 6)
+  ReqDiscard --> ReqDiscard: Discard (> 6)
   ReqPlay --> ReqPlay: Play (non-last)
   ReqPlay --> Table: Play (last)
   Table --> ReqPlay: delay
@@ -91,11 +93,16 @@ Sent after every action
 event: 'table'
 args: {
   trump: str (suit)
-  dealer: int (0-3, none)
-  lead: int (0-3, none)
-  won: int (0-3, none)
-  bidder: int (0-3, none)
+  lead: str (suit)
   bid: int, -1 to 19 (-1=not bid, 0=passed, 1-18=bid, 19=moon)
+  
+  dealer: int (0-3, none)
+  winner: int (0-3, none)
+  bidder: int (0-3, none)
+  
+  deck_cnt: int
+  kitty_cnt: int
+  
   seats:[
     {
       name: str
@@ -107,14 +114,14 @@ args: {
     },
     ...
   ]
-  score: [int, int]
-  points: [int, int]
-  cards_won: [
-    [ str (card), ...],
-    [...]
+  teams:[
+    {
+      score: int
+      points: int
+      cards_won: [ str (card), ... ]
+    },
+    ...
   ]
-  deck_cnt: int
-  kitty_cnt: int
 }
 ```
 
@@ -246,9 +253,7 @@ Server sends to client to request a card to play.
 
 ```
 event: 'req_play'
-args: {
-  TBD
-}
+args: [ str (card), ... ] 
 ```
 
 ## Play

@@ -139,7 +139,9 @@ class TableNamespace(Namespace):
         print("Background thread started")
         count = 0
         while True:
-            socketio.sleep(1)
+            socketio.sleep(0.5)
+            for t in tables.values():
+                t.check()
 
             # socketio.emit('status', {'msg': f'count is {count}'}, namespace=self.namespace)
 
@@ -152,7 +154,14 @@ class TableNamespace(Namespace):
         username = session.get('username')
         seat = session.get('seat')
         t = tables.get(table_name)
-        t.play_card(seat, message.get('card'))
+        t.play_card(seat, message)
+
+    def on_discard(self, message):
+        table_name = session.get('table')
+        username = session.get('username')
+        seat = session.get('seat')
+        t = tables.get(table_name)
+        t.discard(seat, message)
 
     def on_update(self):
         table_name = session.get('table')
