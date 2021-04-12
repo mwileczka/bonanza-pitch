@@ -10,6 +10,7 @@ var tableState = {theBid: 0, trump:'', dealer:0, lead:0,
 function StartGame(){
     //RefreshTable(tableState);
 //OnRequestBid(0);
+   // OnRequestSuit();
 }
 function RefreshTable(state){
     var westSeat = seat+1;
