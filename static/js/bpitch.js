@@ -19,22 +19,23 @@ function RefreshTable(state){
     var okToShowPlay = false;
     for (s = 0 ; s<=3 ; s++){
         if (state.seats[s].played !== null){okToShowPlay = true;}
+
     }
 
     if (okToShowPlay){$( "#tblPlay" ).show();}else{$( "#tblPlay" ).hide();}
 
 
     //South Seat
-    RefreshPlayerDisplay(seat,'playerNameSouth', 'playedCardSouth');
+    RefreshPlayerDisplay(seat,'South');
     //West Seat
     DealHiddenHand('divHandWest', state.seats[westSeat].hand);
-    RefreshPlayerDisplay(westSeat,'playerNameWest','playedCardWest');
+    RefreshPlayerDisplay(westSeat,'West');
     //North Seat
     DealHiddenHand('divHandNorth', state.seats[northSeat].hand);
-    RefreshPlayerDisplay(northSeat,'playerNameNorth', 'playedCardNorth');
+    RefreshPlayerDisplay(northSeat,'North');
     //East Seat
     DealHiddenHand('divHandEast', state.seats[eastSeat].hand);
-    RefreshPlayerDisplay(eastSeat,'playerNameEast', 'playedCardEast');
+    RefreshPlayerDisplay(eastSeat,'East');
 
     RefreshKitty(state.kitty_cnt);
 
@@ -86,30 +87,37 @@ function DealHiddenHand(handName, ct){
     }
 }
 
-function RefreshPlayerDisplay(seatNum, displayName, playCardName){
+function RefreshPlayerDisplay(seatNum, NSEW){
     var seat = tableState.seats[seatNum];
     var str = '';
     if (seat.name !== null) str += seat.name;
 
+    $( "#playerName" + NSEW ).html(str);
+    str = '';
     if (seat.bid === 0 && tableState.trump === null){
-        str += " &bull; Pass";
+        str += "Pass";
     }
     else if (seat.bid !== null && seat.bid > 0){
-        str += " &bull; " + seat.bid;
+        str += "Bid: " + seat.bid;
     }
 
     if (tableState.bidder === seatNum){
-        if (tableState.trump === 'S') str += " &bull; &spadesuit;"
-        else if (tableState.trump === 'D') str += " &bull; &diams;"
-        else if (tableState.trump === 'C') str += " &bull; &clubsuit;"
-        else if (tableState.trump === 'H') str += " &bull; &heartsuit;"
+        if (tableState.trump === 'S') str += " &spadesuit;"
+        else if (tableState.trump === 'D') str += " &diams;"
+        else if (tableState.trump === 'C') str += " &clubsuit;"
+        else if (tableState.trump === 'H') str += " &heartsuit;"
+    }
+    var grayed = false;
+if (tableState.winner !== null && tableState.winner !== seatNum)
+    {
+        grayed = true;
     }
 
+    SetPlayCard(seat.played, 'playedCard' + NSEW, grayed);
 
 
-    SetPlayCard(seat.played, playCardName);
+    $( "#playerStats" + NSEW ).html(str);
 
-    $( "#"+displayName ).html(str);
 }
 
 function SetBidOptions(minBid, maxBid){
@@ -180,7 +188,14 @@ function AddCardToHand(card, hand){
     var container = document.getElementById(hand);
     var img = document.createElement("img");
     img.setAttribute("src", "../static/cards/" + card + ".svg");
-    img.setAttribute("class", "pcard");
+    if (hand==='divHandSouth')
+    {
+        img.setAttribute("class", "pcard");
+    }else{
+        img.setAttribute("class", "pcard-small");
+    }
+
+
     img.setAttribute("id", "card_" + card);
     img.onclick = function(){OnCardClick(card, hand);};
     container.appendChild(img);
@@ -202,13 +217,16 @@ function OnRequestPlay(data){
     PlayableCards = data;
 }
 
-function SetPlayCard(card, elem){
+function SetPlayCard(card, elem, grayed){
     var container = document.getElementById(elem);
     container.innerHTML = "";
     if (card !== null){
         var img = document.createElement("img");
         img.setAttribute("src", "../static/cards/" + card + ".svg")
-        img.setAttribute("class", "pcard")
+        if (grayed)
+            img.setAttribute("class", "pcard-grayed")
+        else
+            img.setAttribute("class", "pcard")
         container.innerHTML = "";
         container.appendChild(img);
     }

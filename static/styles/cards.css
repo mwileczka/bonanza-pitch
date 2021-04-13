@@ -6,6 +6,24 @@ img.pcard {
 	vertical-align: initial;
 	box-sizing: initial;
 }
+img.pcard-grayed {
+	height: 12vh;
+	margin: 0;
+	/*padding: 0;*/
+	border: 0;
+	vertical-align: initial;
+	box-sizing: initial;
+	opacity: .5;
+	z-index: -1;
+}
+img.pcard-small {
+	height: 8vh;
+	margin: 0;
+	/*padding: 0;*/
+	border: 0;
+	vertical-align: initial;
+	box-sizing: initial;
+}
 
 /*
  * A hand is a div containing pcards.
@@ -73,17 +91,13 @@ img.pcard {
 .hhand-xcompact {
 	display: inline-block;
 }
-.hhand-xcompact img.pcard:first-child {
+.hhand-xcompact img.pcard-small:first-child {
 	margin-left: 0px;
 	padding-top: 10px;
 }
-.hhand-xcompact img.pcard {
-	margin-left: -8vh;
+.hhand-xcompact img.pcard-small {
+	margin-left: -5.5vh;
 	padding-top: 10px;
-}
-.hhand-xcompact.active-hand img.pcard:hover {
-	padding-top: 0px;
-	padding-bottom: 10px;
 }
 
 /*
