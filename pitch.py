@@ -231,6 +231,7 @@ class Table:
         for seat in self.seats:
             seat.played = None
         self.lead = None
+        self.winner = None
 
     def reset_for_hand(self):
         self.turn = next_seat(self.dealer)
