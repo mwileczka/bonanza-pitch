@@ -204,6 +204,7 @@ function OnCardClick(theCard, hand){
     if (hand==='divHandSouth'){
         if (PlayableCards.includes(theCard)){
             socket.emit('play', theCard);
+            PlayableCards = [];
         }
     }
 }
