@@ -34,6 +34,28 @@ body {
 .playedCardBottom{
 	margin-top:0vh;
 }
+
+.playableCard{
+	padding-top: 0px;
+	padding-bottom: 10px;
+}
+
+.selectSuit{
+	background-color:transparent;
+	border-spacing: 20px;
+	display: table;
+}
+.selectSuit-caption{
+	caption-side: top;
+	display: table-caption;
+	text-align: center;
+	background-color:transparent;
+}
+.selectSuit-group{
+	display: table-row-group;
+}
+
+
 .modal-content-bid {
     position: relative;
     display: -ms-flexbox;
