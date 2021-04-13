@@ -190,7 +190,7 @@ class TableNamespace(Namespace):
             if not t.seats[idx].player:
                 proc = multiprocessing.Process(
                     target=bot_client_proc,
-                    args=(table_name, idx, bot_client_username(), 'http://localhost:5000'))
+                    args=(table_name, idx, bot_client_username(), 'http://127.0.0.1:5000'))
                 proc.start()
                 bot_clients[(table_name, idx)] = proc
 

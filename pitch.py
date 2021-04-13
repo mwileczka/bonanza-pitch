@@ -383,12 +383,19 @@ class Table:
             while self.seats[self.turn].bid == 0:
                 self.turn = next_seat(self.turn)
 
+            self.update()
             self.req_bid()
         else:
             # there is a winning bid
             print(f'Seat {win_idx} won the bid for {win_bid}')
+            for idx in range(0, 4):
+                if idx == win_idx:
+                    continue
+                self.seats[idx].bid=None
+
             self.bidder = win_idx
             self.turn = win_idx
+            self.update()
             self.req_suit()
 
     def req_suit(self):
