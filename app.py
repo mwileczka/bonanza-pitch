@@ -3,13 +3,14 @@ import pprint
 from flask import Flask, render_template, request, redirect, url_for, session
 from flask_socketio import SocketIO, join_room, leave_room, emit, Namespace, rooms
 import flask_socketio
-from bot import BotPlayerClient
+from bot import bot_client_proc, bot_client_username
 
 import pitch
 from flask_session import Session
 from pitch import Table, Deck, Player
 from threading import Lock
 import flask
+import multiprocessing
 
 app = Flask(__name__)
 app.debug = True
@@ -30,6 +31,10 @@ bot_clients = {}
 thread = None
 thread_lock = Lock()
 
+# logging.basicConfig(level=logging.DEBUG, filename='pitch.log', filemode='w')
+# console = logging.StreamHandler()
+# console.setLevel(logging.DEBUG)
+# logging.getLogger('').addHandler(console)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -42,10 +47,12 @@ def table():
         username = request.form['username']
         table = request.form['table']
         seat = int(request.form['seat'])
+        is_bot = bool(request.form['bot'])
         # Store the data in session
         session['username'] = username
         session['table'] = table
         session['seat'] = seat
+        session['is_bot'] = is_bot
         # TODO add check for avail seat here
         return render_template('table.html', session=session)
     else:
@@ -181,8 +188,11 @@ class TableNamespace(Namespace):
         t = tables[table_name]
         for idx in range(0, 4):
             if not t.seats[idx].player:
-                bot = BotPlayerClient(table_name, idx)
-                bot_clients[bot.username] = bot
+                proc = multiprocessing.Process(
+                    target=bot_client_proc,
+                    args=(table_name, idx, bot_client_username(), 'http://localhost:5000'))
+                proc.start()
+                bot_clients[(table_name, idx)] = proc
 
     def on_bid(self, args):
         print("Got bid", args)

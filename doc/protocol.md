@@ -64,7 +64,7 @@ stateDiagram-v2
   ReqPlay --> ReqPlay: Play (non-last)
   ReqPlay --> Table: Play (last)
   Table --> ReqPlay: delay
-  Table --> ReqDeal: End of Hand/Game    
+  Table --> ReqDeal: End of Hand/Game
 ```
 
 
@@ -185,8 +185,11 @@ args: {
 
 ```
 event: 'deal'
-args: {}
+args: {
+  force: bool
+}
 ```
+NOTE: force should only be used for debugging purposes
 
 # Bidding
 
@@ -294,9 +297,3 @@ args: {
 
 # Admin & Debugging
 
-## Force Deal
-
-```
-event: 'deal'
-args: {}
-```

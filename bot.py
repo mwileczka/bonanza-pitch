@@ -5,17 +5,27 @@ from time import sleep
 import socketio
 import requests
 from pprint import pprint
-
 from pitch import Deck
+
+bot_client_inc = 1
+
+
+def bot_client_proc(table, seat, username, url=None):
+    bot = BotPlayerClient(table=table, seat=seat, username=username, url=url)
+    bot.sio.wait()
+
+
+def bot_client_username():
+    global bot_client_inc
+    username = f"Bot{bot_client_inc}"
+    bot_client_inc += 1
+    return username
 
 
 class BotPlayerClient:
-    inc = 1
-
-    def __init__(self, table, seat, username=None, url='http://localhost:5000/table'):
-        if not username:
-            username = f"Bot{BotPlayerClient.inc}"
-            BotPlayerClient.inc += 1
+    def __init__(self, table, seat, username, url=None):
+        if not url:
+            url = 'http://localhost:5000'
         self.username = username
         self.table_name = table
         self.seat = seat
@@ -25,10 +35,11 @@ class BotPlayerClient:
         self.table = None  # type: Dict
         self.hand = None  # type: Deck
 
-        r = requests.post(self.url, {
+        r = requests.post(self.url + '/table', {
             'username': self.username,
             'table': self.table_name,
-            'seat': str(self.seat)
+            'seat': str(self.seat),
+            'bot': "1"
         })
         self.cookie_session = r.cookies.get('session')
         print("Session Cookie", self.cookie_session)
@@ -45,7 +56,7 @@ class BotPlayerClient:
         self.sio.on('req_discard', self.on_req_discard, namespace=self.ns)
 
         print("connecting")
-        self.sio.connect('http://localhost:5000', namespaces=self.ns,
+        self.sio.connect(self.url, namespaces=self.ns,
                          headers={'Cookie': 'session=' + self.cookie_session})
 
     def disconnect(self):
@@ -93,9 +104,3 @@ class BotPlayerClient:
     def on_req_deal(self, args):
         # TODO
         pass
-
-
-if __name__ == '__main__':
-    bot = BotPlayerClient('Matrix', 2)
-    sleep(5)
-    bot.disconnect()

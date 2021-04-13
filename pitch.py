@@ -6,7 +6,6 @@ from enum import Enum, unique, auto
 from abc import ABC
 import datetime
 
-
 def next_seat(idx):
     return 0 if idx >= 3 else idx + 1
 
@@ -42,7 +41,10 @@ class Deck(list):
 
     @staticmethod
     def ordinal(card):
-        return Deck.card_set.index(card)
+        try:
+            return Deck.card_set.index(card)
+        except ValueError:
+            return -1
 
     def keep_suit(self, suit):
         idx = 0
@@ -59,29 +61,31 @@ class Deck(list):
     def suit(self, suit):
         resp = Deck([])
         for card in self:
-            if card[1] in suit:
+            if card and card[1] in suit:
                 resp.append(card)
         return resp
 
     def suit_cnt(self, suit):
         cnt = 0
         for card in self:
-            if card[1] in suit:
+            if card and card[1] in suit:
                 cnt += 1
         return cnt
 
     def high(self, suit):
         highest = None
         for card in self:
-            if card[1] not in suit:
+            if not card or card[1] not in suit:
                 continue
-            if Deck.ordinal(card) > Deck.ordinal(highest):
+            if not highest or Deck.ordinal(card) > Deck.ordinal(highest):
                 highest = card
         return highest
 
     def suit_cnts(self):
         cnts = {k: 0 for k in "SCDH"}
         for card in self:
+            if not card:
+                continue
             cnts[card[1]] += 1
         return cnts
 
@@ -94,6 +98,8 @@ class Deck(list):
                 highest_cnt = cnt
                 highest_suit = suit
         return highest_suit
+
+
 
 
 class Team:
@@ -152,13 +158,13 @@ class Seat:
 class Table:
     @unique
     class State(Enum):
-        WaitPlayers = auto()
-        WaitBid = auto()
-        WaitSuit = auto()
-        WaitDiscard = auto()
-        WaitPlay = auto()
-        WaitDeal = auto()
-        WaitHand = auto()
+        WaitPlayers = 0
+        WaitDeal = 1
+        WaitBid = 2
+        WaitSuit = 3
+        WaitDiscard = 4
+        WaitPlay = 5
+        WaitHand = 6
 
     def get_lobby_json(self):
         return {
@@ -204,7 +210,8 @@ class Table:
             'turn': self.turn,
             'bidder': self.bidder,
             'winner': self.winner,
-            'bid': self.seats[self.bidder].bid if self.bidder else None
+            'bid': self.seats[self.bidder].bid if self.bidder else None,
+            'state': self.state.value
         }
 
     def check(self):
@@ -216,7 +223,14 @@ class Table:
                     self.dealer = next_seat(self.dealer)
                     self.deal()
                 else:
+                    self.reset_for_trick()
+                    self.update()
                     self.req_play()
+
+    def reset_for_trick(self):
+        for seat in self.seats:
+            seat.played = None
+        self.lead = None
 
     def reset_for_hand(self):
         self.turn = next_seat(self.dealer)
@@ -237,8 +251,6 @@ class Table:
         self.deck.reset()
         self.deck.shuffle()
 
-        self.kitty.clear()
-
         for seat in self.seats:
             seat.hand.extend(self.deck.draw(6))
             seat.hand.sort()
@@ -257,7 +269,13 @@ class Table:
 
         self.state = Table.State.WaitBid
 
+
+        self.message(self.turn, 'Request Bid')
         self.seats[self.turn].player.req_bid(min_bid, max_bid)
+
+    def message(self, seat_idx, s):
+        fs = f'{self.seats[seat_idx].player.username}[{seat_idx}]: {s}'
+        self.tx('status', fs)
 
     def end_hand(self):
         if self.dealer is None or self.dealer >= 3:
@@ -330,6 +348,8 @@ class Table:
         return self.seats[self.turn]
 
     def bid(self, seat_idx, bid):
+        self.message(seat_idx, 'Bid {}'.format(bid))
+
         self.seats[seat_idx].bid = bid
         self.turn = next_seat(self.turn)
 
@@ -419,6 +439,9 @@ class Table:
 
             self.update()
         else:
+            if not self.lead:
+                self.lead = card[1]
+
             self.update()
             self.req_play()
 
