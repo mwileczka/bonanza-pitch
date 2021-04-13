@@ -216,7 +216,7 @@ class Table:
 
     def check(self):
         if self.state == Table.State.WaitHand:
-            if self.wait_end and datetime.datetime.now() <= self.wait_end:
+            if self.wait_end and datetime.datetime.now() >= self.wait_end:
                 self.wait_end = None
                 if len(self.turn_seat.hand) == 0:
                     # TODO end of hand or game
@@ -427,7 +427,7 @@ class Table:
 
         self.turn = next_seat(self.turn)
 
-        if self.turn_seat.playable:
+        if self.turn_seat.played:
             # everyone has played a card
 
             trick = Deck(self.played)
@@ -437,11 +437,13 @@ class Table:
             win_card = highest_trump if highest_trump else highest_lead
             self.winner = trick.index(win_card)
 
-            self.teams[self.winner].cards_won.extend(trick)
+            self.teams[self.winner % 2].cards_won.extend(trick)
 
             self.turn = self.winner
 
+            print(datetime.datetime.now())
             self.wait_end = datetime.datetime.now() + datetime.timedelta(seconds=3.0)
+            print(self.wait_end)
             self.state = Table.State.WaitHand
 
             self.update()
