@@ -146,13 +146,22 @@ function RefreshEndOfHandScore(data){
 
         //scores
         for (i = 0 ; i< data.scores.length ; i++){
+            var isLastScore = false;
             var style = "";
-            if (i !== data.scores.length - 1){ style += "text-decoration: line-through;"}else{style += "border-bottom: 1px solid white;"}
+            var spanStyle0 = "";
+            var spanStyle1 = "";
+            if (i !== data.scores.length - 1){ style += "text-decoration: line-through;"}
+            else{
+                if (data.game_winner === 1){spanStyle1 = 'background-color:yellow';}
+                else if (data.game_winner === 0){spanStyle0 = 'background-color:yellow';}
+                style += "border-bottom: 1px solid white;"
+            }
 
             tr = document.createElement("tr");
             tbl.appendChild(tr);
             td = document.createElement("td");
-            td.setAttribute("style", style)
+            td.setAttribute("style", style + spanStyle0)
+
             td.innerHTML = data.scores[i][0];
             tr.appendChild(td);
 
@@ -160,7 +169,7 @@ function RefreshEndOfHandScore(data){
             td.innerHTML = data.scores[i][1];
 
             style += "border-left: 1px solid white;";
-            td.setAttribute("style", style);
+            td.setAttribute("style", style + spanStyle1)
             tr.appendChild(td);
         }
 
