@@ -4,8 +4,9 @@
     <title>Bonanza Pitch - {{ session.get('table') }}</title>
     <!--Link to CSS -->
 
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
-          integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+   <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
+          integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">-->
     <!--<link href="../static/style.css" rel="stylesheet" />-->
     <link href="../static/styles/cards.css" rel="stylesheet" type="text/css">
     <link href="../static/styles/BPitch.css" rel="stylesheet" type="text/css">
@@ -84,6 +85,12 @@
 </head>
 
 <body class="text-center" onload='StartGame()'>
+    <div class="card text-white bg-secondary mb-3 float-left" style="width:200px;">
+        <div class="card-body" style="color:white">
+            <p class="card-text">Score<br/>Score<br/>Score<br/>Score</p>
+        </div>
+    </div>
+    <img src="../static/img/chat.png" class="chatIcon float-" onclick="HandleChatClick();">
 <h3>
     <span class="label label-default">User: {{ session['username'] }}</span>
     <span class="label label-default">Seat: {{ session['seat'] }}</span>
@@ -92,7 +99,9 @@
     <button type="button" class="btn btn-danger" onclick=leave_table()>Leave</button>
 </h3>
 
-<img src="../static/img/chat.png" class="chatIcon" onclick="HandleChatClick();">
+
+
+
 <div id="gameTable" class="container-fluid" style="height:100%">
     <div class="row">
         <div id="divHandNorth" class="col-sm hand hhand-xcompact col-12"></div>
