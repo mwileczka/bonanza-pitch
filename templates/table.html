@@ -50,7 +50,8 @@
             socket.on('req_deal', function (data) {
                 console.log('request deal', data)
                 // TODO show dialog
-                socket.emit('deal',{})
+                OnRequestDeal(data);
+                //socket.emit('deal',{})
             });
             socket.on('req_discard', function (data) {
                 console.log('request discard', data)
@@ -91,10 +92,10 @@
 
 <body class="text-center" style="height:100vh" onload='StartGame()'>
 
-<div class="card text-white bg-secondary mb-3" style="width:200px;position:absolute;top:0%;left:0%;">
-    <div class="card-body" style="color:white">
-        <p class="card-text">
-            <table id="tblCardScore">
+<div id="divScoreCard" class="scorecard" style="width:200px;position:absolute;top:0%;left:0%;">
+    <div  style="color:white">
+        <p >
+            <table id="tblCardScore" style="">
 
             </table>
         </p>
@@ -114,7 +115,9 @@
 
     <div class="row" style="height:10vh">
         <div id="divHandNorth" class="col-sm hand hhand-xcompact col-12"></div>
-        <div id="playerStatsNorth" style="position:absolute; left:70%;color:white;width:20vw;height:20vh;"  class="col-2 player-stats"></div>
+        <div  id="playerStatsNorth" class="col-2 player-stats player-stats-NS">
+
+        </div>
     </div>
     <div class="row" style="height:5vh">
         <div id="playerNameNorth" class="col player-name"></div>
@@ -152,7 +155,7 @@
         <div id="rightCol" class="col-2 col-sm-2 col-md-2 col-lg-2 col-xl-1">
             <p id="divHandEast" class="hand hhand-xcompact"></p>
             <p id="playerNameEast" class="player-name"></p>
-            <p id="playerStatsEast" class="player-stats"></p>
+            <p id="playerStatsEast" class="player-stats bid-display"></p>
         </div>
     </div>
 
@@ -162,7 +165,8 @@
         </div>
         <div class="row" style="height:20vh">
             <div id="divHandSouth" style="height:20vh" class="col-sm  hand hhand-compact"></div>
-            <div id="playerStatsSouth" style="position:absolute; left:70%;color:white;width:20vw;height:20vh;"  class="col-2 player-stats"></div>
+            <div id="playerStatsSouth" class="col-2 player-stats player-stats-NS">
+            </div>
         </div>
     </div>
 </div>
@@ -178,7 +182,22 @@
             </div>
         </div>
     </div>
+</div>
+<div id="divHandSummary" class="modal" role="dialog" aria-hidden="true">
+    <div class="vertical-alignment-helper">
+        <div class="modal-dialog vertical-align-center">
+            <div class="modal-content modal-content-bid d-flex" style="width:250px;">
+                <div class="modal-body hand-summary">
+                    <table id="divHandSummaryContent" style="z-index:6;">
 
+
+                    </table>
+                    <button onclick='Deal()'>OK</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
 </div>
 <div id="divSelectSuit" class="modal">
     <div class="vertical-alignment-helper">

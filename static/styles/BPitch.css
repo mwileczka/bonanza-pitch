@@ -76,6 +76,13 @@ body {
 	text-align:center;
 	width:100%;
 }
+.player-stats-NS{
+	position:absolute;
+	left:80%;
+	color:white;
+	width:20vw;
+	height:20vh;
+}
 .player-name{
 	color:white;
 	font-weight: bold;
@@ -115,6 +122,16 @@ body {
 	background-color:white;
 	border-radius: 25px;
 	padding:20px;
+}
+
+div.scorecard{
+	color: white;
+	background-color: #404040;
+	/*margin-bottom: 1rem!important;*/
+}
+div.hand-summary{
+	background-color:#C0C0C0;
+	text-align:center;
 }
 
 /*body {

@@ -47,29 +47,57 @@ function RefreshTable(state){
 }
 function RefreshScore(){
     var str = '';
-    var tbl= document.getElementById("tblCardScore");
+    if (tableState.seats[0].name !== null && tableState.seats[1].name !== null && tableState.seats[2].name !== null && tableState.seats[3].name !== null)
+    {
+        var tbl= document.getElementById("tblCardScore");
     removeAllChildNodes(tbl);
 
     var tr1 = document.createElement("tr");
     tbl.appendChild(tr1);
     var th = document.createElement("th");
+    th.setAttribute("style", "border-bottom: 1px solid white;")
     th.innerHTML = tableState.seats[0].name + " & " + tableState.seats[2].name;
     tr1.appendChild(th);
 
     th = document.createElement("th");
     th.innerHTML = tableState.seats[1].name + " & " + tableState.seats[3].name;
+    th.setAttribute("style", "border-bottom: 1px solid white; border-left: 1px solid white;")
     tr1.appendChild(th);
 
-    var i = 0;
-    for (i = 0 ; i <=5 ; i++) {
+
         var tr = document.createElement("tr");
         tbl.appendChild(tr);
         var td = document.createElement("td");
-        td.innerHTML = '18';
+        td.innerHTML = tableState.teams[0].score;
         tr.appendChild(td);
         td = document.createElement("td");
-        td.innerHTML = '0';
+        td.innerHTML = tableState.teams[1].score;
+        td.setAttribute("style", "border-left: 1px solid white;")
         tr.appendChild(td);
+
+        //point cards
+        tr = document.createElement("tr");
+        tbl.appendChild(tr);
+        for (i=0;i < tableState.teams.length ; i++)
+        {
+            td = document.createElement("td");
+            str = "";
+            for (j=0 ; j< tableState.teams[i].cards_won.length ; j++){
+                var c = tableState.teams[i].cards_won[j];
+                var suit = c.slice(1,2);
+                if (suit === tableState.trump)
+                    str += GetCardHTML(c) + " ";
+            }
+
+            td.innerHTML = str.trim();
+            if (i === 1) {td.setAttribute("style", "border-left: 1px solid white;");}
+            tr.appendChild(td);
+        }
+
+       $('#divScoreCard').show();
+    }
+    else {
+        $('#divScoreCard').hide();
     }
 }
 function removeAllChildNodes(parent) {
@@ -86,6 +114,101 @@ function OnRequestSuit(data){
     $('#divMessage').html();
     $( "#divSelectSuit" ).show();
 }
+function OnRequestDeal(data){
+    RefreshEndOfHandScore(data)
+    $( "#divHandSummary" ).show();
+}
+function Deal(){
+    socket.emit('deal',{});
+    $( '#divHandSummary' ).hide();
+}
+
+function RefreshEndOfHandScore(data){
+    var str = '';var i = 0;var j = 0;var tr;var td;var str;
+    if (tableState.seats[0].name !== null && tableState.seats[1].name !== null && tableState.seats[2].name !== null && tableState.seats[3].name !== null) {
+
+        //headings
+        var tbl= document.getElementById("divHandSummaryContent");
+        removeAllChildNodes(tbl);
+
+        tr = document.createElement("tr");
+        tbl.appendChild(tr);
+
+        var th = document.createElement("th");
+        th.setAttribute("style", "border-bottom: 1px solid white;")
+        th.innerHTML = tableState.seats[0].name + " & " + tableState.seats[2].name;
+        tr.appendChild(th);
+
+        th = document.createElement("th");
+        th.innerHTML = tableState.seats[1].name + " & " + tableState.seats[3].name;
+        th.setAttribute("style", "border-bottom: 1px solid white; border-left: 1px solid white;")
+        tr.appendChild(th);
+
+        //scores
+        for (i = 0 ; i< data.scores.length ; i++){
+            var style = "";
+            if (i !== data.scores.length - 1){ style += "text-decoration: line-through;"}else{style += "border-bottom: 1px solid white;"}
+
+            tr = document.createElement("tr");
+            tbl.appendChild(tr);
+            td = document.createElement("td");
+            td.setAttribute("style", style)
+            td.innerHTML = data.scores[i][0];
+            tr.appendChild(td);
+
+            td = document.createElement("td");
+            td.innerHTML = data.scores[i][1];
+
+            style += "border-left: 1px solid white;";
+            td.setAttribute("style", style);
+            tr.appendChild(td);
+        }
+
+         //point cards
+        tr = document.createElement("tr");
+        tbl.appendChild(tr);
+        for (i=0;i < data.point_cards.length ; i++)
+        {
+            td = document.createElement("td");
+            str = "";
+            for (j=0 ; j< data.point_cards[i].length ; j++){
+                str += GetCardHTML(data.point_cards[i][j]) + " ";
+            }
+
+            td.innerHTML = str.trim();
+            if (i === 1) {td.setAttribute("style", "border-left: 1px solid white;");}
+            tr.appendChild(td);
+        }
+
+        $('#divScoreCard').show();
+    }else{
+        $('#divScoreCard').hide();
+    }
+}
+function GetCardHTML(card){
+    var str = card.slice(0, 1);
+    var suit = card.slice(1,2);
+
+    str += GetSuitHTML(suit);
+
+    return str;
+}
+function GetSuitHTML(suit, useWhiteForBlack){
+    var blackColor = "black";
+    if (useWhiteForBlack)
+        blackColor = "white";
+    if (suit === 'S')
+        return "<span style='color:" + blackColor +";'>" + "&spadesuit;" + "</span>";
+    else if (suit === 'D')
+        return "<span style='color:red;'>" + "&diams;" + "</span>";
+    else if (suit === 'C')
+        return "<span style='color:" + blackColor + ";'>" + "&clubsuit;" + "</span>";
+    else if (suit === 'H')
+        return "<span style='color:red;'>" + "&heartsuit;" + "</span>";
+
+    return '';
+}
+
 
 function RefreshKitty(ct){
     var k = document.getElementById('divKitty');
@@ -134,13 +257,10 @@ function RefreshPlayerDisplay(seatNum, NSEW){
     }
 
     if (tableState.bidder === seatNum){
-        if (tableState.trump === 'S') str += " &spadesuit;"
-        else if (tableState.trump === 'D') str += " &diams;"
-        else if (tableState.trump === 'C') str += " &clubsuit;"
-        else if (tableState.trump === 'H') str += " &heartsuit;"
+        str+= GetSuitHTML(tableState.trump, true);
     }
     var grayed = false;
-if (tableState.winner !== null && tableState.winner !== seatNum)
+    if (tableState.winner !== null && tableState.winner !== seatNum)
     {
         grayed = true;
     }
