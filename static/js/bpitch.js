@@ -43,7 +43,39 @@ function RefreshTable(state){
         $('#divMessage').html('Waiting for ' + state.seats[state.turn].name);
     else
         $('#divMessage').html("");
+    RefreshScore();
+}
+function RefreshScore(){
+    var str = '';
+    var tbl= document.getElementById("tblCardScore");
+    removeAllChildNodes(tbl);
 
+    var tr1 = document.createElement("tr");
+    tbl.appendChild(tr1);
+    var th = document.createElement("th");
+    th.innerHTML = tableState.seats[0].name + " & " + tableState.seats[2].name;
+    tr1.appendChild(th);
+
+    th = document.createElement("th");
+    th.innerHTML = tableState.seats[1].name + " & " + tableState.seats[3].name;
+    tr1.appendChild(th);
+
+    var i = 0;
+    for (i = 0 ; i <=5 ; i++) {
+        var tr = document.createElement("tr");
+        tbl.appendChild(tr);
+        var td = document.createElement("td");
+        td.innerHTML = '18';
+        tr.appendChild(td);
+        td = document.createElement("td");
+        td.innerHTML = '0';
+        tr.appendChild(td);
+    }
+}
+function removeAllChildNodes(parent) {
+    while (parent.firstChild) {
+        parent.removeChild(parent.firstChild);
+    }
 }
 function OnRequestBid(req_bid){
     SetBidOptions(req_bid.min, req_bid.max);
@@ -129,15 +161,15 @@ function SetBidOptions(minBid, maxBid){
 
     var i = 0;
     var j = 0;
-    //6 rows of 3
-    for (i = 0 ; i <= 5; i++)
+    //3 rows of 6
+    for (i = 0 ; i <= 2; i++)
     {
         var tr = document.createElement("tr");
         tr.setAttribute("style","width:100%;")
         tbl.appendChild(tr);
-        for (j = 0; j <=2; j++) {
+        for (j = 0; j <=5; j++) {
             var td = document.createElement("td");
-            var bid = (i*3) + j + 1;
+            var bid = (i*6) + j + 1;
             var btn = CreateBidButton(bid, (bid >= minBid && bid <= maxBid), bid);
             td.appendChild(btn);
             tr.appendChild(td);
@@ -210,12 +242,12 @@ function OnCardClick(theCard, hand){
 }
 var PlayableCards = [];
 function OnRequestPlay(data){
+    PlayableCards = data;
     var i = 0;
     for (i = 0 ; i < data.length ; i++){
         var img = document.getElementById("card_" + data[i]);
         img.classList.add("playableCard");
     }
-    PlayableCards = data;
 }
 
 function SetPlayCard(card, elem, grayed){
