@@ -73,11 +73,11 @@ class BotPlayerClient:
 
     def on_table(self, args):
         self.table = args
-        pprint(args)
+        # pprint(args)
 
     def on_hand(self, args):
         self.hand = Deck(args['cards'])
-        pprint(args)
+        # pprint(args)
 
     def on_req_bid(self, args):
         bid = args.get('min', 1)
@@ -90,9 +90,11 @@ class BotPlayerClient:
                 bid = 0
         elif r > .20:
             bid = 0
+        self.sio.sleep(1)
         self.tx('bid', bid)
 
     def on_req_suit(self, args):
+        self.sio.sleep(1)
         self.tx('suit', self.hand.suit_highest_cnt())
 
     def on_req_play(self, args):
@@ -102,5 +104,5 @@ class BotPlayerClient:
         self.tx('discard', self.hand[random.randint(0, len(self.hand) - 1)])
 
     def on_req_deal(self, args):
-        # TODO
-        pass
+        self.sio.sleep(random.randint(0,3))
+        self.tx('deal', {})

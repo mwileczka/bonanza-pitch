@@ -5,9 +5,8 @@ from flask_socketio import SocketIO, join_room, leave_room, emit, Namespace, roo
 import flask_socketio
 from bot import bot_client_proc, bot_client_username
 
-import pitch
 from flask_session import Session
-from pitch import Table, Deck, Player
+from pitch import Table, Deck, Player, Seat
 from threading import Lock
 import flask
 import multiprocessing
@@ -30,6 +29,7 @@ bot_clients = {}
 
 thread = None
 thread_lock = Lock()
+
 
 # logging.basicConfig(level=logging.DEBUG, filename='pitch.log', filemode='w')
 # console = logging.StreamHandler()
@@ -105,6 +105,7 @@ class TableNamespace(Namespace):
 
         t = tables.setdefault(table_name, Table(id=table_name))
         t.seats[seat].player = player
+        t.seats[seat].state = Seat.State.Ready
 
         t.update()
 
@@ -127,17 +128,22 @@ class TableNamespace(Namespace):
 
         t = tables.get(table_name)
         t.seats[seat_idx].player = None
+        t.seats[seat_idx].state = Seat.State.Disconnected
 
         emit('status', {'msg': f'{username} has left the table.'}, room=table_name)
 
     def on_disconnect(self):
         table_name = session.get('table')
         username = session.get('username')
-        seat = session.get('seat')
-        print('disconnect', username, table_name, seat)
+        seat_idx = session.get('seat')
+        print('disconnect', username, table_name, seat_idx)
         leave_room(table_name)
         players[username].ws_token = None
         emit('status', {'msg': username + ' has been disconnected.'}, room=table_name)
+
+        t = tables.get(table_name)
+        t.seats[seat_idx].player = None
+        t.seats[seat_idx].state = Seat.State.Disconnected
 
         if request.sid == players[username].ws_token:
             players[username].ws_token = None
@@ -176,12 +182,13 @@ class TableNamespace(Namespace):
         t = tables[table_name]
         t.update(seat_idx=seat)
 
-    def on_deal(self):
+    def on_deal(self, message):
         table_name = session.get('table')
         username = session.get('username')
         seat = session.get('seat')
         t = tables[table_name]
-        t.deal()
+        force = message.get('force', False) if message else False
+        t.deal(seat, force)
 
     def on_add_bots(self):
         table_name = session.get('table')
@@ -209,6 +216,7 @@ class TableNamespace(Namespace):
         seat = session.get('seat')
         t = tables[table_name]
         t.suit(args)
+
 
 class LobbyNamespace(Namespace):
     def on_req_lobby(self):

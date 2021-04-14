@@ -6,6 +6,7 @@ from enum import Enum, unique, auto
 from abc import ABC
 import datetime
 
+
 def next_seat(idx):
     return 0 if idx >= 3 else idx + 1
 
@@ -81,6 +82,15 @@ class Deck(list):
                 highest = card
         return highest
 
+    def low(self, suit):
+        lowest = None
+        for card in self:
+            if not card or card[1] not in suit:
+                continue
+            if not lowest or Deck.ordinal(card) < Deck.ordinal(lowest):
+                lowest = card
+        return lowest
+
     def suit_cnts(self):
         cnts = {k: 0 for k in "SCDH"}
         for card in self:
@@ -100,13 +110,12 @@ class Deck(list):
         return highest_suit
 
 
-
-
 class Team:
     def __init__(self):
         self.points = 0
         self.score = 0
         self.cards_won = Deck([])
+        self.point_cards = Deck([])
 
     def get_json(self):
         return {
@@ -115,8 +124,19 @@ class Team:
             'cards_won': list(self.cards_won)
         }
 
+    def reset_for_hand(self):
+        self.points = 0
+        self.cards_won.clear()
+        self.point_cards.clear()
+
 
 class Seat:
+    @unique
+    class State(Enum):
+        Disconnected = 0
+        Ready = 1
+        Waiting = 2
+
     def __init__(self, idx=None, id=None):
         self.hand = Deck([])
         self.played = None
@@ -126,6 +146,7 @@ class Seat:
         self.kept = 0
         self.player = None
         self.playable = Deck([])
+        self.state = Seat.State.Disconnected
 
     def get_table_json(self):
         return {
@@ -133,7 +154,8 @@ class Seat:
             'played': self.played,
             'bid': self.bid,
             'kept': self.kept,
-            'name': self.player.username if self.player else None
+            'name': self.player.username if self.player else None,
+            'state': self.state.value
         }
 
     def get_hand_json(self):
@@ -190,6 +212,10 @@ class Table:
         self.bidder = None
         self.winner = None
         self.wait_end = None
+        self.hand_cnt = 0
+        self.hand_scores = []
+        self.trump_high = None
+        self.trump_low = None
 
     def get_json(self):
         return {
@@ -209,23 +235,81 @@ class Table:
             'kitty_cnt': len(self.kitty),
             'turn': self.turn,
             'bidder': self.bidder,
+            'dealer': self.dealer,
             'winner': self.winner,
             'bid': self.seats[self.bidder].bid if self.bidder else None,
-            'state': self.state.value
+            'state': self.state.value,
+            'hand_cnt': self.hand_cnt
         }
 
     def check(self):
         if self.state == Table.State.WaitHand:
             if self.wait_end and datetime.datetime.now() >= self.wait_end:
                 self.wait_end = None
-                if len(self.turn_seat.hand) == 0:
-                    # TODO end of hand or game
-                    self.dealer = next_seat(self.dealer)
-                    self.deal()
-                else:
-                    self.reset_for_trick()
+
+                bid_team = self.bidder % 2
+                other_team = 0 if bid_team == 1 else 1
+
+                if len(self.turn_seat.hand) > 0:
+                    bid_team_trump = self.seats[bid_team].hand.suit_cnt(self.trump) + self.seats[
+                        bid_team + 2].hand.suit_cnt(self.trump)
+                    other_team_trump = self.seats[other_team].hand.suit_cnt(self.trump) + self.seats[
+                        other_team + 2].hand.suit_cnt(self.trump)
+
+                    if bid_team_trump and other_team_trump:
+                        self.reset_for_trick()
+                        self.update()
+                        self.req_play()
+                        return
+
+                    for seat in self.seats:
+                        self.teams[bid_team if bid_team_trump else other_team].cards_won.extend(seat.hand)
+                        seat.hand.clear()
+                    self.calc_points()
                     self.update()
-                    self.req_play()
+
+                if self.bids[self.bidder] == 19:
+                    if self.teams[bid_team].points == 18:
+                        self.teams[bid_team].score = 64
+                    else:
+                        self.teams[bid_team].score = 0
+                        self.teams[other_team].score = 64
+                else:
+                    if self.teams[bid_team].points >= self.bids[self.bidder]:
+                        self.teams[bid_team].score += self.teams[bid_team].points
+                    else:
+                        self.teams[bid_team].score -= self.bids[self.bidder]
+
+                    self.teams[other_team].score += self.teams[other_team].points
+
+                self.hand_scores.append((self.teams[0].score, self.teams[1].score))
+
+                self.update_score()
+
+                # if both over 64, bidder wins
+                win_team = None
+                if self.teams[bid_team].score >= 64:
+                    # they won
+                    win_team = bid_team
+                elif self.teams[other_team].score >= 64:
+                    # they won
+                    win_team = other_team
+
+                if win_team is None:
+                    # nobody won
+                    self.hand_cnt += 1
+                    self.dealer = next_seat(self.dealer)
+
+                    self.req_deal(None)
+                else:
+                    self.dealer = next_seat(self.dealer)
+                    if self.dealer % 2 != win_team:
+                        self.dealer = next_seat(self.dealer)
+
+                    self.req_deal(win_team)
+
+    def update_score(self):
+        self.tx('score', self.hand_scores)
 
     def reset_for_trick(self):
         for seat in self.seats:
@@ -241,12 +325,36 @@ class Table:
         self.winner = None
         self.bidder = None
         for team in self.teams:
-            team.points = 0
-            team.cards_won.clear()
+            team.reset_for_hand()
         for seat in self.seats:
             seat.reset_for_hand()
+        self.trump_high = None
+        self.trump_low = None
 
-    def deal(self):
+    def reset_for_game(self):
+        # TODO - add anything else?
+        self.hand_cnt = 0
+        self.hand_scores.clear()
+        for team in self.teams:
+            team.score = 0
+
+    def deal(self, seat_idx, force=False):
+        self.seats[seat_idx].state = Seat.State.Ready
+
+        if force:
+            for seat in self.seats:
+                seat.state = Seat.State.Ready
+
+        self.update()
+
+        if force or all([x.state == Seat.State.Ready for x in self.seats]):
+            pass
+        else:
+            return
+
+        if self.teams[0].score >= 64 or self.teams[1].score >= 64:
+            self.reset_for_game()
+
         self.reset_for_hand()
 
         self.deck.reset()
@@ -266,10 +374,13 @@ class Table:
         highest_bid = max([x.bid for x in self.seats])
 
         min_bid = max(highest_bid + 1, 1)
+
         max_bid = 19
+        for team in self.teams:
+            if team.score < 0 or team.score >= 46:
+                max_bid = 18
 
         self.state = Table.State.WaitBid
-
 
         self.message(self.turn, 'Request Bid')
         self.seats[self.turn].player.req_bid(min_bid, max_bid)
@@ -311,9 +422,23 @@ class Table:
 
         self.req_play()
 
-    def ref_discard(self):
+    def req_discard(self):
         # TODO
         pass
+
+    def req_deal(self, winner=None):
+        self.state = Table.State.WaitDeal
+
+        for seat in self.seats:
+            seat.state = Seat.State.Waiting
+
+        self.tx('req_deal', {
+            'scores': self.hand_scores,
+            'game_winner': winner,
+            'points': [x.score for x in self.teams],
+            'point_cards': [x.point_cards for x in self.teams],
+            'hand_cnt': self.hand_cnt
+        })
 
     def req_play(self):
         self.state = Table.State.WaitPlay
@@ -356,15 +481,17 @@ class Table:
 
         win_bid = 0
         win_idx = -1
+        yet_to_bid = 0
         bidding = 0
+        passed = 0
         for idx in range(0, 4):
             b = self.seats[idx].bid
             if b < 0:
                 # hasn't bid yet
-                bidding += 1
+                yet_to_bid += 1
             elif b == 0:
                 # passed
-                pass
+                passed += 1
             elif b <= 18:
                 # still bidding
                 bidding += 1
@@ -376,9 +503,21 @@ class Table:
                 win_bid = b
                 win_idx = idx
                 bidding = 1
+                yet_to_bid = 0
+                passed = 3
                 break
 
-        if bidding > 1:
+        print(f'bid bidding={bidding} passed={passed} yet={yet_to_bid}')
+
+        if passed == 3 and yet_to_bid == 1:
+            print("Dealer forced to bid")
+            win_bid = 1
+            win_idx = self.dealer
+            self.seats[self.dealer].bid = 1
+            yet_to_bid = 0
+            bidding = 1
+
+        if bidding + yet_to_bid > 1:
             # more than one still bidding
             print(f"There are {bidding} seats left bidding")
             while self.seats[self.turn].bid == 0:
@@ -392,7 +531,7 @@ class Table:
             for idx in range(0, 4):
                 if idx == win_idx:
                     continue
-                self.seats[idx].bid=None
+                self.seats[idx].bid = None
 
             self.bidder = win_idx
             self.turn = win_idx
@@ -442,10 +581,10 @@ class Table:
 
             self.turn = self.winner
 
-            print(datetime.datetime.now())
-            self.wait_end = datetime.datetime.now() + datetime.timedelta(seconds=3.0)
-            print(self.wait_end)
+            self.wait_end = datetime.datetime.now() + datetime.timedelta(seconds=2.0)
             self.state = Table.State.WaitHand
+
+            self.calc_points()
 
             self.update()
         else:
@@ -470,6 +609,27 @@ class Table:
             # send hands to all seats
             for seat in self.seats:
                 seat.tx_hand()
+
+    def calc_points(self):
+        trump_out = Deck([])
+        for team in self.teams:
+            team.points = 0
+            team.point_cards.clear()
+            trump_out.extend(team.cards_won.suit(self.trump))
+            for (rank, val) in (('9', 9), ('5', 5), ('T', 1), ('J', 1)):
+                card = rank + self.trump
+                if card in team.cards_won:
+                    team.points += val
+                    team.point_cards.append(card)
+        trump_out.sort()
+        self.trump_low = trump_out[0]
+        self.trump_high = trump_out[-1]
+
+        for card in (self.trump_low, self.trump_high):
+            for team in self.teams:
+                if card in team.cards_won:
+                    team.points += 1
+                    team.point_cards.append(card)
 
 
 class Player(ABC):

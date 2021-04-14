@@ -125,6 +125,18 @@ args: {
 }
 ```
 
+## Score Card
+
+Sent at the end of each hand/game.
+
+```
+event: 'score'
+args: [
+    [ int, int ],
+    ...
+]
+```
+
 # Table
 
 ## Add Table
@@ -178,7 +190,11 @@ at the end if the hand, and at the end of the game.
 ```
 event: 'req_deal'
 args: {
-    TBD
+    scores: [[int,int],...]
+    game_winner: None, 0, 1
+    points: [int, int]
+    point_cards: [[str (card), ...], [str (card), ...]]
+    hand_cnt: int
 }
 ```
 ## Deal

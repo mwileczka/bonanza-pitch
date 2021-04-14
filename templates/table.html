@@ -51,13 +51,20 @@
             });
             socket.on('req_deal', function (data) {
                 console.log('request deal', data)
+                // TODO show dialog
+                socket.emit('deal',{})
             });
             socket.on('req_discard', function (data) {
                 console.log('request discard', data)
+                // TODO send back a discard
             });
             socket.on('req_play', function (data) {
                 console.log('request play', data)
                 OnRequestPlay(data);
+            });
+            socket.on('score', function (data) {
+                console.log('score', data);
+                // TODO update scoreboard
             });
 
             $('#send').click(function (e) {
@@ -66,7 +73,7 @@
                 socket.emit('text', {msg: text});
             });
             $('#deal').click(function (e) {
-                socket.emit('deal');
+                socket.emit('deal', {'force': true});
             });
             $('#add_bots').click(function (e) {
                 socket.emit('add_bots');
