@@ -110,7 +110,7 @@ body {
 }
 
 .img-suit-card{
-	height:8vh;
+	width:8vw;
 	border: 1px solid black;
 	background-color:white;
 	border-radius: 25px;

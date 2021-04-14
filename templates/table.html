@@ -4,10 +4,8 @@
     <title>Bonanza Pitch - {{ session.get('table') }}</title>
     <!--Link to CSS -->
 
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-   <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
-          integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">-->
-    <!--<link href="../static/style.css" rel="stylesheet" />-->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
+          integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
     <link href="../static/styles/cards.css" rel="stylesheet" type="text/css">
     <link href="../static/styles/BPitch.css" rel="stylesheet" type="text/css">
 
@@ -84,14 +82,19 @@
     </script>
 </head>
 
-<body class="text-center" onload='StartGame()'>
-    <div class="card text-white bg-secondary mb-3 float-left" style="width:200px;">
-        <div class="card-body" style="color:white">
-            <p class="card-text">Score<br/>Score<br/>Score<br/>Score</p>
-        </div>
+<body class="text-center" style="height:100vh" onload='StartGame()'>
+
+<div class="card text-white bg-secondary mb-3" style="width:200px;position:absolute;top:0%;left:0%;">
+    <div class="card-body" style="color:white">
+        <p class="card-text">
+            <table id="tblCardScore">
+
+            </table>
+        </p>
     </div>
-    <img src="../static/img/chat.png" class="chatIcon float-" onclick="HandleChatClick();">
-<h3>
+</div>
+<img src="../static/img/chat.png" class="chatIcon float-" onclick="HandleChatClick();">
+<h3 style="height:10vh">
     <span class="label label-default">User: {{ session['username'] }}</span>
     <span class="label label-default">Seat: {{ session['seat'] }}</span>
     <button type="button" id="add_bots" class="btn btn-info">Add Bots</button>
@@ -100,29 +103,20 @@
 </h3>
 
 
+<div id="gameTable" class="container-fluid" style="height:90vh">
 
-
-<div id="gameTable" class="container-fluid" style="height:100%">
-    <div class="row">
+    <div class="row" style="height:10vh">
         <div id="divHandNorth" class="col-sm hand hhand-xcompact col-12"></div>
+        <div id="playerStatsNorth" style="position:absolute; left:70%;color:white;width:20vw;height:20vh;"  class="col-2 player-stats"></div>
     </div>
-
-    <div class="row">
+    <div class="row" style="height:5vh">
         <div id="playerNameNorth" class="col player-name"></div>
     </div>
-    <div class="row">
-        <div id="playerStatsNorth" class="col player-stats"></div>
-    </div>
-    <div class="row" style="height:2vh">
-
-    </div>
-    <div class="row">
+    <div class="row" style="height:5vh">
         <div id="divMessage" class="col-sm player-name col-12"></div>
     </div>
-        <div class="row" style="height:10vh">
 
-    </div>
-    <div class="row" style="height:50vh">
+    <div class="row" style="height:38vh">
         <div id="leftCol" class="col-2 col-sm-2 col-md-2 col-lg-2 col-xl-1">
             <p id="divHandWest" class="hand hhand-xcompact"></p>
             <p id="playerNameWest" class="player-name"></p>
@@ -130,35 +124,23 @@
         </div>
 
         <div id="divPlayingArea" class="col col-sm-8 col-md-8 col-lg-8 col-xl-10" style="height:100%">
-
-            <table id="tblPlay" width="100%" style="margin-top:8vh;">
-                <tr>
-                    <td width="33%"></td>
-                    <td width="33%">
-                        <div id="playedCardNorth" class="playedCardTop"></div>
-                    </td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td>
-                        <div id="playedCardWest" class="playedCardLeft"></div>
-                    </td>
-                    <td>
-                        <div id="divKitty" class="hand hhand-xcompact" style="margin-left: -72px;"></div>
-                    </td>
-                    <td>
-                        <div id="playedCardEast" class="playedCardRight"></div>
-                    </td>
-                </tr>
-                <tr>
-                    <td></td>
-                    <td>
-                        <div id="playedCardSouth" class="playedCardBottom"></div>
-                    </td>
-                    <td></td>
-                </tr>
-
-            </table>
+            <div id="tblPlay" class="row" style="height:38vh; width:100%">
+                <div class="row" style="width:100%">
+                    <div class="col" style="width:100%"></div>
+                    <div class="col" style="width:100%"><div id="playedCardNorth" class="playedCardTop"></div></div>
+                    <div class="col" style="width:100%"></div>
+                </div>
+                <div class="row" style="width:100%">
+                    <div class="col " style="width:100%"><div id="playedCardWest" class="playedCardLeft"></div></div>
+                    <div class="col " style="width:100%"><div id="divKitty" class="hand hhand-xcompact" style="margin-left: -72px;"></div></div>
+                    <div class="col " style="width:100%"><div id="playedCardEast" class="playedCardRight"></div></div>
+                </div>
+                <div class="row" style="width:100%">
+                    <div class="col"></div>
+                    <div class="col"><div id="playedCardSouth" class="playedCardBottom"></div></div>
+                    <div class="col"></div>
+                </div>
+            </div>
         </div>
         <div id="rightCol" class="col-2 col-sm-2 col-md-2 col-lg-2 col-xl-1">
             <p id="divHandEast" class="hand hhand-xcompact"></p>
@@ -169,13 +151,11 @@
 
     <div class="fixed-bottom">
         <div class="row">
-            <div id="playerNameSouth" class="col player-name"></div>
+            <div id="playerNameSouth" style="height:5vh" class="col player-name"></div>
         </div>
-         <div class="row">
-            <div id="playerStatsSouth" class="col player-stats"></div>
-        </div>
-        <div class="row" style="height:15vh">
-            <div id="divHandSouth" class="col-sm  hand hhand-compact"></div>
+        <div class="row" style="height:20vh">
+            <div id="divHandSouth" style="height:20vh" class="col-sm  hand hhand-compact"></div>
+            <div id="playerStatsSouth" style="position:absolute; left:70%;color:white;width:20vw;height:20vh;"  class="col-2 player-stats"></div>
         </div>
     </div>
 </div>
@@ -228,6 +208,7 @@
     <br/><br/>
 </div>
 
+>
 </body>
 </html>
 
