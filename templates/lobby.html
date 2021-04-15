@@ -4,8 +4,9 @@
 <head>
     <title>Bonanza Pitch</title>
     <!--Link to CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
-          integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+    <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='img/favicon.png') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
+          integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
     <link href="{{ url_for('static', filename='styles/style.css') }}" rel="stylesheet">
     <script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
 
@@ -43,12 +44,14 @@
     <input type="text" id="username" name="username" class="form-control"
            value="{{ session.get('username','') }}" required autofocus><br>
     <input type="hidden" name="bot" value="0">
-    <h2>Matrix</h2>
+    <div class="card p-3">
+    <div class="card-header">Matrix</div>
     <input type="hidden" id="table" name="table" class="form-control" value="Matrix" readonly required><br>
     <button id="seat0" class="btn btn-lg btn-primary btn-block" name="seat" value="0" disabled>Sit - Team 1</button>
     <button id="seat1" class="btn btn-lg btn-primary btn-block" name="seat" value="1" disabled>Sit - Team 2</button>
     <button id="seat2" class="btn btn-lg btn-primary btn-block" name="seat" value="2" disabled>Sit - Team 1</button>
     <button id="seat3" class="btn btn-lg btn-primary btn-block" name="seat" value="3" disabled>Sit - Team 2</button>
+    </div>
 
 </form>
 </body>
