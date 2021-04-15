@@ -10,6 +10,18 @@ body {
 	background-color: transparent;
 }
 
+@media (min-width: 992px) and (orientation:landscape) {
+    .col-md-4 {
+        // some properties
+    }
+}
+
+@media (min-width: 992px) and (orientation:portrait) {
+    .col-md-4 {
+         // redefined
+    }
+}
+
 .chatIcon{
 	height:100px;
 	position:absolute;
@@ -77,8 +89,8 @@ body {
 	width:100%;
 }
 .player-stats-NS{
-	position:absolute;
-	left:80%;
+	/*position:absolute;
+	left:80%;*/
 	color:white;
 	width:20vw;
 	height:20vh;
@@ -117,7 +129,7 @@ body {
 }
 
 .img-suit-card{
-	width:8vw;
+	width:30%;
 	border: 1px solid black;
 	background-color:white;
 	border-radius: 25px;

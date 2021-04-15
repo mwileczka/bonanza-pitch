@@ -8,7 +8,7 @@
           integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
     <link href="../static/styles/cards.css" rel="stylesheet" type="text/css">
     <link href="../static/styles/BPitch.css" rel="stylesheet" type="text/css">
-
+<link href="../static/styles/bootstrapExtended.css" rel="stylesheet" type="text/css">
     <script src="../static/js/jquery-3.6.0.min.js"></script>
     <!--<script src="../static/js/cards.js"></script>-->
     <script src="../static/js/bpitch.js"></script>
@@ -114,11 +114,12 @@
 <div id="gameTable" class="container-fluid" style="height:90vh">
 
     <div class="row" style="height:10vh">
-        <div id="divHandNorth" class="col-sm hand hhand-xcompact col-12"></div>
-        <div  id="playerStatsNorth" class="col-2 player-stats player-stats-NS">
-
-        </div>
+        <div class="col col-1 col-sm-1 col-md-4 col-lg-4 col-xl-4">&nbsp</div>
+        <div id="divHandNorth" style="height:20vh" class="col col-9 col-sm-9 col-md-4 col-lg-4 col-xl-3 hand hhand-xcompact"></div>
+        <div id="playerStatsNorth" class="col col-1 col-sm-1 col-md-2 col-lg-2 col-xl-2 player-stats player-stats-NS"></div>
+        <div class="col col-1 col-sm-1 col-md-2 col-lg-2 col-xl-3">&nbsp</div>
     </div>
+
     <div class="row" style="height:5vh">
         <div id="playerNameNorth" class="col player-name"></div>
     </div>
@@ -164,9 +165,10 @@
             <div id="playerNameSouth" style="height:5vh" class="col player-name"></div>
         </div>
         <div class="row" style="height:20vh">
-            <div id="divHandSouth" style="height:20vh" class="col-sm  hand hhand-compact"></div>
-            <div id="playerStatsSouth" class="col-2 player-stats player-stats-NS">
-            </div>
+            <div class="col col-1 col-sm-1 col-md-4 col-lg-4 col-xl-4">&nbsp</div>
+            <div id="divHandSouth" style="height:20vh" class="col col-9 col-sm-9 col-md-4 col-lg-4 col-xl-3 hand hhand-compact"></div>
+            <div id="playerStatsSouth" class="col col-1 col-sm-1 col-md-2 col-lg-2 col-xl-2 player-stats player-stats-NS"></div>
+            <div class="col col-1 col-sm-1 col-md-2 col-lg-2 col-xl-3">&nbsp</div>
         </div>
     </div>
 </div>

@@ -86,7 +86,7 @@ function RefreshScore(){
                 var c = tableState.teams[i].cards_won[j];
                 var suit = c.slice(1,2);
                 if (suit === tableState.trump)
-                    str += GetCardHTML(c) + " ";
+                    str += GetCardHTML(c, true) + " ";
             }
 
             td.innerHTML = str.trim();
@@ -194,11 +194,12 @@ function RefreshEndOfHandScore(data){
         $('#divScoreCard').hide();
     }
 }
-function GetCardHTML(card){
+function GetCardHTML(card, useWhiteForBlack){
     var str = card.slice(0, 1);
     var suit = card.slice(1,2);
 
-    str += GetSuitHTML(suit);
+    if (str === 'T') {str ='10';}
+    str += GetSuitHTML(suit, useWhiteForBlack);
 
     return str;
 }
@@ -258,6 +259,7 @@ function RefreshPlayerDisplay(seatNum, NSEW){
 
     $( "#playerName" + NSEW ).html(str);
     str = '';
+    if(seatNum === tableState.dealer){str += "Dealer<br/>"}
     if (seat.bid === 0 && tableState.trump === null){
         str += "Pass";
     }
@@ -366,6 +368,7 @@ function OnCardClick(theCard, hand){
         if (PlayableCards.includes(theCard)){
             socket.emit('play', theCard);
             PlayableCards = [];
+            $('#divMessage').html("");
         }
     }
 }
@@ -377,6 +380,7 @@ function OnRequestPlay(data){
         var img = document.getElementById("card_" + data[i]);
         img.classList.add("playableCard");
     }
+    $('#divMessage').html("It's your turn");
 }
 
 function SetPlayCard(card, elem, grayed){
