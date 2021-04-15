@@ -49,41 +49,49 @@ This stylesheet overrides the medium settings with default (xs) settings when in
 .col-1 {
   flex: 0 0 auto;
   width: 8.3333333333%;
+  max-width:100%;
 }
 
 .col-2 {
   flex: 0 0 auto;
   width: 16.6666666667%;
+  max-width:100%;
 }
 
 .col-3 {
   flex: 0 0 auto;
   width: 25%;
+  max-width:100%;
 }
 
 .col-4 {
   flex: 0 0 auto;
   width: 33.3333333333%;
+  max-width:100%;
 }
 
 .col-5 {
   flex: 0 0 auto;
   width: 41.6666666667%;
+  max-width:100%;
 }
 
 .col-6 {
   flex: 0 0 auto;
   width: 50%;
+  max-width:100%;
 }
 
 .col-7 {
   flex: 0 0 auto;
   width: 58.3333333333%;
+  max-width:100%;
 }
 
 .col-8 {
   flex: 0 0 auto;
   width: 66.6666666667%;
+  max-width:100%;
 }
 
 .col-9 {
@@ -95,16 +103,19 @@ This stylesheet overrides the medium settings with default (xs) settings when in
 .col-10 {
   flex: 0 0 auto;
   width: 83.3333333333%;
+  max-width:100%;
 }
 
 .col-11 {
   flex: 0 0 auto;
   width: 91.6666666667%;
+  max-width:100%;
 }
 
 .col-12 {
   flex: 0 0 auto;
   width: 100%;
+  max-width:100%;
 }
 
 .offset-1 {
@@ -211,6 +222,7 @@ This stylesheet overrides the medium settings with default (xs) settings when in
   --bs-gutter-y: 3rem;
 }
 }
+/*
 @media (min-width: 768px) and (orientation:landscape){
   .col-md {
     flex: 1 0 0%;
@@ -423,4 +435,4 @@ This stylesheet overrides the medium settings with default (xs) settings when in
 .gy-md-5 {
     --bs-gutter-y: 3rem;
   }
-}
+}*/
