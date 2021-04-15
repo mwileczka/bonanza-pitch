@@ -102,7 +102,7 @@
     </div>
 </div>
 <img src="../static/img/chat.png" class="chatIcon float-" onclick="HandleChatClick();">
-<h3 style="height:10vh">
+<h3 style="height:5vh">
     <span class="label label-default">User: {{ session['username'] }}</span>
     <span class="label label-default">Seat: {{ session['seat'] }}</span>
     <button type="button" id="add_bots" class="btn btn-info">Add Bots</button>
@@ -113,21 +113,22 @@
 
 <div id="gameTable" class="container-fluid" style="height:90vh">
 
-    <div class="row" style="height:10vh">
-        <div class="col col-1 col-sm-1 col-md-4 col-lg-4 col-xl-4">&nbsp</div>
-        <div id="divHandNorth" style="height:20vh" class="col col-9 col-sm-9 col-md-4 col-lg-4 col-xl-3 hand hhand-xcompact"></div>
-        <div id="playerStatsNorth" class="col col-1 col-sm-1 col-md-2 col-lg-2 col-xl-2 player-stats player-stats-NS"></div>
-        <div class="col col-1 col-sm-1 col-md-2 col-lg-2 col-xl-3">&nbsp</div>
+    <div class="row" style="height:10vh;">
+        <div id="divHandNorth" style="height:20vh;width:100%;" class="col  hand hhand-xcompact"></div>
     </div>
 
     <div class="row" style="height:5vh">
         <div id="playerNameNorth" class="col player-name"></div>
     </div>
     <div class="row" style="height:5vh">
+        <div id="playerStatsNorth" class="col  player-stats player-stats-NS"></div>
+    </div>
+
+    <div class="row" style="height:5vh">
         <div id="divMessage" class="col-sm player-name col-12"></div>
     </div>
 
-    <div class="row" style="height:38vh">
+    <div class="row" style="height:33vh">
         <div id="leftCol" class="col col-3 col-sm-3 col-md-2 col-lg-2 col-xl-2 col-xxl-1">
             <p id="divHandWest" class="hand hhand-xcompact"></p>
             <p id="playerNameWest" class="player-name"></p>
@@ -164,11 +165,12 @@
         <div class="row">
             <div id="playerNameSouth" style="height:5vh" class="col player-name"></div>
         </div>
+        <div class="row" style="height:5vh">
+            <div id="playerStatsSouth" class="col player-stats player-stats-NS"></div>
+        </div>
         <div class="row" style="height:20vh">
-            <div class="col col-1 col-sm-1 col-md-4 col-lg-4 col-xl-4">&nbsp</div>
-            <div id="divHandSouth" style="height:20vh" class="col col-9 col-sm-9 col-md-4 col-lg-4 col-xl-3 hand hhand-compact"></div>
-            <div id="playerStatsSouth" class="col col-1 col-sm-1 col-md-2 col-lg-2 col-xl-2 player-stats player-stats-NS"></div>
-            <div class="col col-1 col-sm-1 col-md-2 col-lg-2 col-xl-3">&nbsp</div>
+            <div id="divHandSouth" style="height:20vh" class="col hand hhand-compact"></div>
+
         </div>
     </div>
 </div>
