@@ -10,6 +10,18 @@ body {
 	background-color: transparent;
 }
 
+@media (min-width: 992px) and (orientation:landscape) {
+    .col-md-4 {
+        // some properties
+    }
+}
+
+@media (min-width: 992px) and (orientation:portrait) {
+    .col-md-4 {
+         // redefined
+    }
+}
+
 .chatIcon{
 	height:100px;
 	position:absolute;
