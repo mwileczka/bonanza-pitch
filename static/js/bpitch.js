@@ -1,19 +1,31 @@
 var tableState = {};
 
 function StartGame(){
+    //window.location.reload(true);
     //RefreshTable(tableState);
 //OnRequestBid(0);
     //OnRequestSuit();
 }
+function GetSeatNum(NSEW){
+    var tmp = 0;
+    if (NSEW === 'S')
+        return seat;
+    else if (NSEW === 'W')
+        tmp = seat + 1;
+    else if (NSEW === 'N')
+        tmp = seat + 2;
+    else if (NSEW === 'E')
+        tmp = seat + 3;
+
+    if (tmp > 3) temp -=4;
+    return tmp
+}
 function RefreshTable(state){
     tableState = state;
-    var westSeat = seat+1;
-    var northSeat = seat+2;
-    var eastSeat = seat+3;
 
-    if (westSeat>3) westSeat -=4;
-    if (northSeat>3) northSeat -=4;
-    if (eastSeat>3) eastSeat -=4;
+    var westSeat = GetSeatNum('W');
+    var northSeat = GetSeatNum('N');
+    var eastSeat = GetSeatNum('E');
 
     var s = 0;
     var okToShowPlay = false;
@@ -252,10 +264,21 @@ function DealHiddenHand(handName, ct){
     }
 }
 
+function OnKick(NSEW){
+    var seatNum = GetSeatNum(NSEW);
+    socket.emit('kick', seatNum);
+}
+
+
 function RefreshPlayerDisplay(seatNum, NSEW){
     var seat = tableState.seats[seatNum];
     var str = '';
-    if (seat.name !== null) str += seat.name;
+    if (seat.name === null){
+        $( "#kick" + NSEW ).hide();
+    }else{
+        str += seat.name;
+        $( "#kick" + NSEW ).show();
+    }
 
     $( "#playerName" + NSEW ).html(str);
     str = '';
@@ -277,7 +300,6 @@ function RefreshPlayerDisplay(seatNum, NSEW){
     }
 
     SetPlayCard(seat.played, 'playedCard' + NSEW, grayed);
-
 
     $( "#playerStats" + NSEW ).html(str);
 

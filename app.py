@@ -1,4 +1,6 @@
 import pprint
+import time
+import math
 
 from flask import Flask, render_template, request, redirect, url_for, session
 from flask_socketio import SocketIO, join_room, leave_room, emit, Namespace, rooms
@@ -40,6 +42,10 @@ thread_lock = Lock()
 def index():
     return render_template('lobby.html')
 
+def version_tick():
+    return math.floor(time.time())
+
+app.jinja_env.globals.update(version_tick=version_tick)
 
 @app.route('/table', methods=['GET', 'POST'])
 def table():
@@ -168,6 +174,10 @@ class TableNamespace(Namespace):
         seat = session.get('seat')
         t = tables.get(table_name)
         t.play_card(seat, message)
+
+    def on_kick(self, message):
+        table_name = session.get('table')
+        t = tables.get(table_name)
 
     def on_discard(self, message):
         table_name = session.get('table')
