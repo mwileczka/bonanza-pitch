@@ -42,10 +42,13 @@ thread_lock = Lock()
 def index():
     return render_template('lobby.html')
 
+
 def version_tick():
     return math.floor(time.time())
 
+
 app.jinja_env.globals.update(version_tick=version_tick)
+
 
 @app.route('/table', methods=['GET', 'POST'])
 def table():
@@ -115,6 +118,8 @@ class TableNamespace(Namespace):
 
         t.update()
 
+        t.re_request(seat)
+
     def on_text(self, message):
         table_name = session.get('table')
         username = session.get('username')
@@ -175,9 +180,10 @@ class TableNamespace(Namespace):
         t = tables.get(table_name)
         t.play_card(seat, message)
 
-    def on_kick(self, message):
+    def on_kick(self, seat_idx):
         table_name = session.get('table')
         t = tables.get(table_name)
+        t.kick(seat_idx)
 
     def on_discard(self, message):
         table_name = session.get('table')

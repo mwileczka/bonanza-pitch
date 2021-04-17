@@ -311,6 +311,24 @@ class Table:
     def update_score(self):
         self.tx('score', self.hand_scores)
 
+    def re_request(self, seat_idx):
+        if self.turn != seat_idx:
+            return
+        if self.state == Table.State.WaitPlayers:
+            pass
+        elif self.state == Table.State.WaitDeal:
+            self.req_deal()  # TODO fix winner arg
+        elif self.state == Table.State.WaitBid:
+            self.req_bid()
+        elif self.state == Table.State.WaitSuit:
+            self.req_suit()
+        elif self.state == Table.State.WaitDiscard:
+            self.req_discard()
+        elif self.state == Table.State.WaitPlay:
+            self.req_play()
+        elif self.state == Table.State.WaitHand:
+            pass
+
     def reset_for_trick(self):
         for seat in self.seats:
             seat.played = None
@@ -338,6 +356,10 @@ class Table:
         for team in self.teams:
             team.score = 0
 
+    def kick(self, seat_idx):
+        self.seats[seat_idx].player = None
+        self.update()
+
     def deal(self, seat_idx, force=False):
         self.seats[seat_idx].state = Seat.State.Ready
 
@@ -350,6 +372,9 @@ class Table:
         if force or all([x.state == Seat.State.Ready for x in self.seats]):
             pass
         else:
+            return
+
+        if not all([x.player for x in self.seats]):
             return
 
         if self.teams[0].score >= 64 or self.teams[1].score >= 64:
@@ -383,11 +408,13 @@ class Table:
         self.state = Table.State.WaitBid
 
         self.message(self.turn, 'Request Bid')
-        self.seats[self.turn].player.req_bid(min_bid, max_bid)
+        if self.turn_seat.player:
+            self.turn_seat.player.req_bid(min_bid, max_bid)
 
     def message(self, seat_idx, s):
-        fs = f'{self.seats[seat_idx].player.username}[{seat_idx}]: {s}'
-        self.tx('status', fs)
+        pass
+        #fs = f'{self.seats[seat_idx].player.username}[{seat_idx}]: {s}'
+        #self.tx('status', fs)
 
     def end_hand(self):
         if self.dealer is None or self.dealer >= 3:
@@ -459,7 +486,8 @@ class Table:
                 playable = self.turn_seat.hand
 
         self.turn_seat.playable = playable
-        self.turn_seat.player.req_play(playable)
+        if self.turn_seat.player:
+            self.turn_seat.player.req_play(playable)
 
     @property
     def bids(self):
@@ -540,7 +568,8 @@ class Table:
 
     def req_suit(self):
         self.state = Table.State.WaitSuit
-        self.seats[self.turn].player.req_suit()
+        if self.turn_seat.player:
+            self.turn_seat.player.req_suit()
 
     def discard(self, seat_idx, card):
         if seat_idx != self.turn:
