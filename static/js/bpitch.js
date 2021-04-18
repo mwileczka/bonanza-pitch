@@ -17,7 +17,7 @@ function GetSeatNum(NSEW){
     else if (NSEW === 'E')
         tmp = seat + 3;
 
-    if (tmp > 3) temp -=4;
+    if (tmp > 3) tmp -=4;
     return tmp
 }
 function RefreshTable(state){
