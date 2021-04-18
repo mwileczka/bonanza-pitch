@@ -34,6 +34,7 @@ class BotPlayerClient:
         self.ns = '/table'
         self.table = None  # type: Dict
         self.hand = None  # type: Deck
+        self.txq = []
 
         r = requests.post(self.url + '/table', {
             'username': self.username,
@@ -59,14 +60,24 @@ class BotPlayerClient:
         self.sio.connect(self.url, namespaces=self.ns,
                          headers={'Cookie': 'session=' + self.cookie_session})
 
+
+
     def disconnect(self):
         self.sio.disconnect()
 
     def tx(self, event, args):
-        self.sio.emit(event, args, namespace=self.ns)
+        if self.ns not in self.sio.namespaces:
+            self.txq.append((event, args))
+        else:
+            self.sio.emit(event, args, namespace=self.ns)
 
     def on_connect(self):
         print('connection established')
+        if self.ns in self.sio.namespaces:
+            while len(self.txq):
+                (e, a) = self.txq.pop()
+                self.sio.emit(e, a, namespace=self.ns)
+
 
     def on_disconnect(self):
         print('disconnected from server')
