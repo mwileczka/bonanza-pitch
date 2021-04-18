@@ -108,14 +108,14 @@ class BotPlayerClient:
 
     def on_req_play(self, args):
         playable = Deck(args)
-        trump_cards = playable.suit(self.table.trump)
-        non_trump_cards = playable.suit(self.table.trump, True)
+        trump_cards = playable.suit(self.table['trump'])
+        non_trump_cards = playable.suit(self.table['trump'], True)
         if len(non_trump_cards):
             non_trump_cards.shuffle()
-            self.tx('play', non_trump_cards.draw())
+            self.tx('play', non_trump_cards.pop())
         else:
             playable.shuffle()
-            self.tx('play', playable.draw())
+            self.tx('play', playable.pop())
 
     def on_req_discard(self, args):
         self.tx('discard', self.hand[random.randint(0, len(self.hand) - 1)])
