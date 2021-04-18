@@ -50,9 +50,7 @@
             });
             socket.on('req_deal', function (data) {
                 console.log('request deal', data)
-                // TODO show dialog
                 OnRequestDeal(data);
-                //socket.emit('deal',{})
             });
             socket.on('req_discard', function (data) {
                 console.log('request discard', data)
@@ -104,8 +102,6 @@
 </div>
 <img src="../static/img/chat.png" class="chatIcon float-" onclick="HandleChatClick();">
 <h3 style="height:5vh">
-    <span class="label label-default">User: {{ session['username'] }}</span>
-    <span class="label label-default">Seat: {{ session['seat'] }}</span>
     <button type="button" id="add_bots" class="btn btn-info">Add Bots</button>
     <button type="button" id="deal" class="btn btn-info">Deal</button>
     <button type="button" class="btn btn-danger" onclick=leave_table()>Leave</button>

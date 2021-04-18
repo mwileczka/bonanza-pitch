@@ -6,8 +6,7 @@ import socketio
 import requests
 from pprint import pprint
 from pitch import Deck
-
-bot_client_inc = 1
+import names
 
 
 def bot_client_proc(table, seat, username, url=None):
@@ -16,10 +15,7 @@ def bot_client_proc(table, seat, username, url=None):
 
 
 def bot_client_username():
-    global bot_client_inc
-    username = f"Bot{bot_client_inc}"
-    bot_client_inc += 1
-    return username
+    return '@' + names.get_first_name()
 
 
 class BotPlayerClient:
@@ -60,8 +56,6 @@ class BotPlayerClient:
         self.sio.connect(self.url, namespaces=self.ns,
                          headers={'Cookie': 'session=' + self.cookie_session})
 
-
-
     def disconnect(self):
         self.sio.disconnect()
 
@@ -78,7 +72,6 @@ class BotPlayerClient:
                 (e, a) = self.txq.pop()
                 self.sio.emit(e, a, namespace=self.ns)
 
-
     def on_disconnect(self):
         print('disconnected from server')
 
@@ -92,15 +85,20 @@ class BotPlayerClient:
 
     def on_req_bid(self, args):
         bid = args.get('min', 1)
+
+        bid_suit = self.hand.suit_highest_cnt()
+        bit_suit_cnt = self.hand.suit_cnt(bid_suit)
+
         r = random.random()
         if bid < 7:
-            if r > .80:
+            if r > .75:
                 bid = 0
         elif bid < 11:
-            if r > .40:
+            if bit_suit_cnt < 3 or r > .5:
                 bid = 0
-        elif r > .20:
-            bid = 0
+        else:
+            if bit_suit_cnt < 4 or r > .5:
+                bid = 0
         self.sio.sleep(1)
         self.tx('bid', bid)
 
@@ -109,11 +107,19 @@ class BotPlayerClient:
         self.tx('suit', self.hand.suit_highest_cnt())
 
     def on_req_play(self, args):
-        self.tx('play', args[random.randint(0, len(args) - 1)])
+        playable = Deck(args)
+        trump_cards = playable.suit(self.table.trump)
+        non_trump_cards = playable.suit(self.table.trump, True)
+        if len(non_trump_cards):
+            non_trump_cards.shuffle()
+            self.tx('play', non_trump_cards.draw())
+        else:
+            playable.shuffle()
+            self.tx('play', playable.draw())
 
     def on_req_discard(self, args):
         self.tx('discard', self.hand[random.randint(0, len(self.hand) - 1)])
 
     def on_req_deal(self, args):
-        self.sio.sleep(random.randint(0,3))
+        self.sio.sleep(random.randint(0, 3))
         self.tx('deal', {})

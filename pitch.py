@@ -59,11 +59,16 @@ class Deck(list):
                 discarded.append(self.pop(idx))
         return discarded
 
-    def suit(self, suit):
+    def suit(self, suit, inverse=False):
         resp = Deck([])
         for card in self:
-            if card and card[1] in suit:
+            if not card:
+                continue
+            if card[1] in suit and not inverse:
                 resp.append(card)
+            elif card[1] not in suit and inverse:
+                resp.append(card)
+
         return resp
 
     def suit_cnt(self, suit):
