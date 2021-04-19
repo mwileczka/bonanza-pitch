@@ -70,6 +70,9 @@ def lobby():
             session['is_bot'] = is_bot
         # TODO add check for avail seat here
 
+    if session.get('seat') is not None:
+        return redirect(url_for('table'))
+
     if session.get('username') is not None:
         return render_template('lobby.html', session=session, tables=tables)
     else:
