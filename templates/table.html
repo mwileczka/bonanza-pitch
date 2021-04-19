@@ -65,6 +65,10 @@
                 // TODO update scoreboard
             });
 
+            socket.on('kick', function () {
+                leave_table();
+            });
+
             $('#send').click(function (e) {
                 text = $('#text').val();
                 $('#text').val('');
@@ -82,7 +86,7 @@
             socket.emit('leave', {}, function () {
                 socket.disconnect();
                 // go back to the login page
-                window.location.href = "{{ url_for('index') }}";
+                window.location.href = "{{ url_for('lobby') }}";
             });
         }
 

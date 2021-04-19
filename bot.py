@@ -51,6 +51,7 @@ class BotPlayerClient:
         self.sio.on('req_play', self.on_req_play, namespace=self.ns)
         self.sio.on('req_deal', self.on_req_deal, namespace=self.ns)
         self.sio.on('req_discard', self.on_req_discard, namespace=self.ns)
+        self.sio.on('kick', self.on_kick, namespace=self.ns)
 
         print("connecting")
         self.sio.connect(self.url, namespaces=self.ns,
@@ -73,7 +74,8 @@ class BotPlayerClient:
                 self.sio.emit(e, a, namespace=self.ns)
 
     def on_disconnect(self):
-        print('disconnected from server')
+        print('disconnected from server...exiting')
+        exit()
 
     def on_table(self, args):
         self.table = args
@@ -82,6 +84,9 @@ class BotPlayerClient:
     def on_hand(self, args):
         self.hand = Deck(args['cards'])
         # pprint(args)
+
+    def on_kick(self):
+        self.sio.disconnect()
 
     def on_req_bid(self, args):
         bid = args.get('min', 1)

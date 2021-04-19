@@ -361,8 +361,15 @@ class Table:
         for team in self.teams:
             team.score = 0
 
-    def kick(self, seat_idx):
-        self.seats[seat_idx].player = None
+    def kick(self, seat_idx=None):
+        # TODO send something to client to redirect to lobby
+        if seat_idx is None:
+            for seat in self.seats:
+                seat.tx('kick', None)
+                seat.player = None
+        else:
+            self.seats[seat_idx].tx('kick', None)
+            self.seats[seat_idx].player = None
         self.update()
 
     def deal(self, seat_idx, force=False):

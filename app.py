@@ -38,37 +38,66 @@ thread_lock = Lock()
 # console.setLevel(logging.DEBUG)
 # logging.getLogger('').addHandler(console)
 
-@app.route('/', methods=['GET', 'POST'])
-def index():
-    return render_template('lobby.html')
-
-
 def version_tick():
     return math.floor(time.time())
 
-
 app.jinja_env.globals.update(version_tick=version_tick)
 
+@app.route('/', methods=['GET','POST'])
+def index():
+    if request.method == 'POST':
+        session.pop('username', None)
+        session.pop('is_bot', None)
+        session.pop('table', None)
+        session.pop('seat', None)
+
+    if 'username' in session:
+        return redirect(url_for('lobby'))
+    return render_template('login.html')
+
+@app.route('/lobby', methods=['GET', 'POST'])
+def lobby():
+    if request.method == 'POST':
+        if 'table' in request.form:
+            new_table_name = request.form['table']
+            if new_table_name not in tables:
+                tables[new_table_name] = Table(id=new_table_name)
+        else:
+            username = request.form['username']
+            is_bot = bool(request.form['bot'])
+            # Store the data in session
+            session['username'] = username
+            session['is_bot'] = is_bot
+        # TODO add check for avail seat here
+
+    if session.get('username') is not None:
+        return render_template('lobby.html', session=session, tables=tables)
+    else:
+        return redirect(url_for('index'))
 
 @app.route('/table', methods=['GET', 'POST'])
 def table():
     if request.method == 'POST':
-        username = request.form['username']
+        if 'username' in request.form:
+            username = request.form['username']
+            session['username'] = username
+        if 'is_bot' in request.form:
+            is_bot = bool(request.form['bot'])
+            session['is_bot'] = is_bot
+
         table = request.form['table']
         seat = int(request.form['seat'])
-        is_bot = bool(request.form['bot'])
+
         # Store the data in session
-        session['username'] = username
         session['table'] = table
         session['seat'] = seat
-        session['is_bot'] = is_bot
+
         # TODO add check for avail seat here
+
+    if session.get('table') is not None:
         return render_template('table.html', session=session)
     else:
-        if session.get('username') is not None:
-            return render_template('table.html', session=session)
-        else:
-            return redirect(url_for('index'))
+        return redirect(url_for('index'))
 
 
 class WebPlayer(Player):
@@ -120,6 +149,8 @@ class TableNamespace(Namespace):
 
         t.re_request(seat)
 
+        update_lobby()
+
     def on_text(self, message):
         table_name = session.get('table')
         username = session.get('username')
@@ -138,10 +169,13 @@ class TableNamespace(Namespace):
         del session['seat']
 
         t = tables.get(table_name)
-        t.seats[seat_idx].player = None
-        t.seats[seat_idx].state = Seat.State.Disconnected
+        if t:
+            t.seats[seat_idx].player = None
+            t.seats[seat_idx].state = Seat.State.Disconnected
 
         emit('status', {'msg': f'{username} has left the table.'}, room=table_name)
+
+        update_lobby()
 
     def on_disconnect(self):
         table_name = session.get('table')
@@ -153,8 +187,9 @@ class TableNamespace(Namespace):
         emit('status', {'msg': username + ' has been disconnected.'}, room=table_name)
 
         t = tables.get(table_name)
-        t.seats[seat_idx].player = None
-        t.seats[seat_idx].state = Seat.State.Disconnected
+        if t:
+            t.seats[seat_idx].player = None
+            t.seats[seat_idx].state = Seat.State.Disconnected
 
         if request.sid == players[username].ws_token:
             players[username].ws_token = None
@@ -234,10 +269,13 @@ class TableNamespace(Namespace):
         t.suit(args)
 
 
+def update_lobby():
+    socketio.emit('lobby', [t.get_lobby_json() for t in tables.values()], to='lobby', namespace='/lobby')
+
 class LobbyNamespace(Namespace):
     def on_req_lobby(self):
         print('on_req_lobby')
-        emit('lobby', [t.get_lobby_json() for t in tables.values()])
+        update_lobby()
 
     def on_disconnect(self):
         username = session.get('username')
@@ -248,6 +286,21 @@ class LobbyNamespace(Namespace):
         username = session.get('username')
         print('connect', username)
         join_room('lobby')
+
+    def on_create(self, table_name):
+        print('create', table_name)
+        if table_name not in tables:
+            tables[table_name] = Table(table_name)
+
+        update_lobby()
+
+    def on_delete(self, table_name):
+        print('delete', table_name)
+        t = tables.pop(table_name, None)
+        if t:
+            t.kick()
+
+        update_lobby()
 
 
 socketio.on_namespace(TableNamespace('/table'))
