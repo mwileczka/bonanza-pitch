@@ -103,6 +103,8 @@ args: {
   deck_cnt: int
   kitty_cnt: int
   
+  deck_trump: [ str (card), ... ] (only on wait for deal)
+  
   seats:[
     {
       name: str
@@ -248,14 +250,16 @@ event: 'suit'
 args: str (suit)
 ```
 
-
 # Discarding
 
 ## Request Discard
 Server sends to client only if >6 trump cards after taking kitty.
 ```
 event: 'req_discard'
-args: {}
+args: {
+    kitty: [ str (suit), ... ]
+    cnt: int
+}
 ```
 
 ## Discard

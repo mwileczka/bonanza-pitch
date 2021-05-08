@@ -244,7 +244,8 @@ class Table:
             'winner': self.winner,
             'bid': self.seats[self.bidder].bid if self.bidder else None,
             'state': self.state.value,
-            'hand_cnt': self.hand_cnt
+            'hand_cnt': self.hand_cnt,
+            'deck_trump': list(self.deck.suit(self.trump)) if self.state == Table.State.WaitDeal else []
         }
 
     def check(self):
