@@ -451,7 +451,7 @@ function AddCardToHand(card, hand){
     var container = document.getElementById(hand);
     var img = document.createElement("img");
     img.setAttribute("src", "../static/cards/" + card + ".svg");
-    if (hand==='divHandSouth')
+    if (hand==='divHandSouth' || hand === 'divHandKitty')
     {
         img.setAttribute("class", "pcard");
     }else{
