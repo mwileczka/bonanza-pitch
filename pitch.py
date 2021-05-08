@@ -491,9 +491,12 @@ class Table:
     def req_discard(self):
         self.state = Table.State.WaitDiscard
 
+        self.turn_seat.tx_hand()
+
         if self.turn_seat.player:
             self.turn_seat.player.req_discard(
-                len(self.turn_seat.hand) - self.rules.hand_size if len(self.turn_seat.hand) > self.rules.hand_size else 0,
+                len(self.turn_seat.hand) - self.rules.hand_size if
+                len(self.turn_seat.hand) > self.rules.hand_size else 0,
                 list(self.kitty)
             )
 

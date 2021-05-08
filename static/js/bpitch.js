@@ -336,6 +336,8 @@ function SetBidOptions(minBid, maxBid){
         tbl.appendChild(tr);
         for (j = 0; j <=5; j++) {
             var td = document.createElement("td");
+            td.setAttribute("width","16.7%")
+            td.style.padding = "4px"
             var bid = (i*6) + j + 1;
             var btn = CreateBidButton(bid, (bid >= minBid && bid <= maxBid), bid);
             td.appendChild(btn);
@@ -347,11 +349,14 @@ function SetBidOptions(minBid, maxBid){
     row.setAttribute("style","width:100%;")
     tbl.appendChild(row);
     var tdMoon = document.createElement("td");
-    tdMoon.setAttribute("colspan","2")
+    tdMoon.setAttribute("colspan","3")
+    tdMoon.style.padding = "4px"
     row.appendChild(tdMoon);
     var btnMoon = CreateBidButton("Shoot the Moon", (maxBid >= 19), 19);
     tdMoon.appendChild(btnMoon);
     var tdPass = document.createElement("td");
+    tdPass.setAttribute("colspan","3")
+    tdPass.style.padding = "4px"
     row.appendChild(tdPass);
     var btnPass = CreateBidButton("Pass", true, 0);
     tdPass.appendChild(btnPass);
