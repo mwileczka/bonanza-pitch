@@ -136,8 +136,10 @@ function OnRequestSuit(data){
     $( "#divSelectSuit" ).show();
 }
 function OnRequestKitty(data){
+    $( "#divHandKitty" ).html('');
     for(var i = 0 ; i < data.length ; i++)
         AddCardToHand(data[i], 'divHandKitty');
+    $( "#divKittyMessageModal" ).show();
 }
 function OnRequestDeal(data){
     RefreshEndOfHandScore(data)
@@ -160,7 +162,7 @@ function OnRequestDiscard(data){
 }
 function KittyMessageOK(){
     $( "#divKittyMessageModal" ).hide();
-    socket.emit('kitty', null);
+    socket.emit('kitty');
 }
 
 var PlayableCards = [];
