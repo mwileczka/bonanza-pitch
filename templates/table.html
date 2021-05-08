@@ -77,6 +77,9 @@
             $('#deal').click(function (e) {
                 socket.emit('deal', {'force': true});
             });
+            $('#deal_test_discard').click(function (e) {
+                socket.emit('deal', {'force': true, 'test_mode': 1});
+            });
             $('#add_bots').click(function (e) {
                 socket.emit('add_bots');
             });
@@ -108,6 +111,7 @@
 <h3 style="height:5vh">
     <button type="button" id="add_bots" class="btn btn-info">Add Bots</button>
     <button type="button" id="deal" class="btn btn-info">Deal</button>
+    <button type="button" id="deal_test_discard" class="btn btn-info">Deal (Test Discard)</button>
     <button type="button" class="btn btn-danger" onclick=leave_table()>Leave</button>
 </h3>
 

@@ -242,7 +242,8 @@ class TableNamespace(Namespace):
         seat = session.get('seat')
         t = tables[table_name]
         force = message.get('force', False) if message else False
-        t.deal(seat, force)
+        test_mode = message.get('test_mode', None) if message else False
+        t.deal(seat, force, test_mode)
 
     def on_add_bots(self):
         table_name = session.get('table')
