@@ -309,6 +309,7 @@ Alert user to problem with ok button (played invalid card, etc.)
 event: 'dialog'
 args: {
   msg: str
+  cards: [ str (card), ... ]
 }
 ```
 

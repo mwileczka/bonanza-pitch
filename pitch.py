@@ -221,6 +221,8 @@ class Table:
         self.hand_scores = []
         self.trump_high = None
         self.trump_low = None
+        self.discarded = Deck([])
+        self.win_team = None
 
     def get_json(self):
         return {
@@ -292,26 +294,25 @@ class Table:
                 self.update_score()
 
                 # if both over 64, bidder wins
-                win_team = None
+                self.win_team = None
                 if self.teams[bid_team].score >= 64:
                     # they won
-                    win_team = bid_team
+                    self.win_team = bid_team
                 elif self.teams[other_team].score >= 64:
                     # they won
-                    win_team = other_team
+                    self.win_team = other_team
 
-                if win_team is None:
+                if self.win_team is None:
                     # nobody won
                     self.hand_cnt += 1
                     self.dealer = next_seat(self.dealer)
-
-                    self.req_deal(None)
+                    self.req_deal()
                 else:
                     self.dealer = next_seat(self.dealer)
-                    if self.dealer % 2 != win_team:
+                    if self.dealer % 2 != self.win_team:
                         self.dealer = next_seat(self.dealer)
 
-                    self.req_deal(win_team)
+                    self.req_deal()
 
     def update_score(self):
         self.tx('score', self.hand_scores)
@@ -322,7 +323,7 @@ class Table:
         if self.state == Table.State.WaitPlayers:
             pass
         elif self.state == Table.State.WaitDeal:
-            self.req_deal()  # TODO fix winner arg
+            self.req_deal()
         elif self.state == Table.State.WaitBid:
             self.req_bid()
         elif self.state == Table.State.WaitSuit:
@@ -343,6 +344,7 @@ class Table:
     def reset_for_hand(self):
         self.turn = next_seat(self.dealer)
         self.kitty.clear()
+        self.discarded.clear()
         self.trump = None
         self.lead = None
         self.winner = None
@@ -357,6 +359,7 @@ class Table:
     def reset_for_game(self):
         # TODO - add anything else?
         self.hand_cnt = 0
+        self.win_team = None
         self.hand_scores.clear()
         for team in self.teams:
             team.score = 0
@@ -425,8 +428,8 @@ class Table:
 
     def message(self, seat_idx, s):
         pass
-        #fs = f'{self.seats[seat_idx].player.username}[{seat_idx}]: {s}'
-        #self.tx('status', fs)
+        # fs = f'{self.seats[seat_idx].player.username}[{seat_idx}]: {s}'
+        # self.tx('status', fs)
 
     def end_hand(self):
         if self.dealer is None or self.dealer >= 3:
@@ -437,38 +440,27 @@ class Table:
     def suit(self, s):
         self.trump = s
 
-        self.seats[self.turn].hand.extend(self.kitty)
-        self.kitty.clear()
-
         for seat in self.seats:
             seat.hand.keep_suit(self.trump)
             seat.kept = len(seat.hand)
 
-        # TODO send req discard
-
-
-
-        discard = self.seats[self.turn].kept - 6
-        if discard > 0:
-            self.seats[self.turn].hand.sort()
-            self.seats[self.turn].hand.draw(-discard)
-            # TODO notify trump was discarded
-
-        for seat in self.seats:
-            draw = 6 - len(seat.hand)
-            seat.hand.extend(self.deck.draw(draw))
-            seat.hand.sort()
-            seat.played = None
-
         self.update()
 
-        self.req_play()
+        self.req_discard()
 
     def req_discard(self):
-        self.turn_seat
+        self.state = Table.State.WaitDiscard
 
+        if len(self.kitty):
+            self.seats[self.turn].hand.extend(self.kitty)
 
-    def req_deal(self, winner=None):
+        if self.turn_seat.player:
+            self.turn_seat.player.req_discard(
+                len(self.turn_seat.hand) - 6 if len(self.turn_seat.hand) > 6 else 0,
+                list(self.kitty)
+            )
+
+    def req_deal(self):
         self.state = Table.State.WaitDeal
 
         for seat in self.seats:
@@ -476,7 +468,7 @@ class Table:
 
         self.tx('req_deal', {
             'scores': self.hand_scores,
-            'game_winner': winner,
+            'game_winner': self.win_team,
             'points': [x.score for x in self.teams],
             'point_cards': [x.point_cards for x in self.teams],
             'hand_cnt': self.hand_cnt,
@@ -516,6 +508,12 @@ class Table:
     @property
     def turn_seat(self):
         return self.seats[self.turn]
+
+    def dialog(self, msg, cards):
+        self.tx('dialog', {
+            'msg': msg,
+            'cards': cards
+        })
 
     def bid(self, seat_idx, bid):
         self.message(seat_idx, 'Bid {}'.format(bid))
@@ -591,11 +589,35 @@ class Table:
         if seat_idx != self.turn:
             print('ERROR: received out of turn discard')
             return
-        if card not in self.turn_seat.hand:
-            print('ERROR: received undiscardable card')
+        if card:
+            if card not in self.turn_seat.hand:
+                print('ERROR: received undiscardable card')
+                self.req_discard()
+                return
+            self.discarded.append(card)
+            self.turn_seat.hand.remove(card)
+
+        if len(self.turn_seat.hand) > 6:
             self.req_discard()
             return
-        # TODO process discard
+
+        self.kitty.clear()
+
+        for seat in self.seats:
+            if len(seat.hand) < 6:
+                seat.hand.extend(self.deck.draw(6 - len(seat.hand)))
+            seat.hand.sort()
+            seat.played = None
+
+        self.update()
+
+        if len(self.discarded) > 0:
+            self.dialog(
+                f"{self.turn_seat.player.username if self.turn_seat.player else 'Bidder'} discarded trump",
+                list(self.discarded)
+            )
+
+        self.req_play()
 
     def play_card(self, seat_idx, card):
         if seat_idx != self.turn:
@@ -696,3 +718,9 @@ class Player(ABC):
 
     def req_play(self, playable):
         self.tx('req_play', list(playable))
+
+    def req_discard(self, cnt, kitty):
+        self.tx('req_discard', {
+            'cnt': cnt,
+            'kitty': kitty
+        })
