@@ -51,6 +51,7 @@ class BotPlayerClient:
         self.sio.on('req_play', self.on_req_play, namespace=self.ns)
         self.sio.on('req_deal', self.on_req_deal, namespace=self.ns)
         self.sio.on('req_discard', self.on_req_discard, namespace=self.ns)
+        self.sio.on('req_kitty', self.on_req_kitty, namespace=self.ns)
         self.sio.on('kick', self.on_kick, namespace=self.ns)
 
         print("connecting")
@@ -122,7 +123,12 @@ class BotPlayerClient:
             playable.shuffle()
             self.tx('play', playable.pop())
 
+    def on_req_kitty(self, args):
+        self.sio.sleep(1)
+        self.tx('kitty', None)
+
     def on_req_discard(self, args):
+        self.sio.sleep(0.5)
         self.tx('discard', self.hand[random.randint(0, len(self.hand) - 1)])
 
     def on_req_deal(self, args):
