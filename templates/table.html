@@ -95,10 +95,10 @@
 
 <body class="text-center" style="height:100vh" onload='StartGame()'>
 
-<div id="divScoreCard" class="scorecard" style="width:200px;position:absolute;top:0%;left:0%;">
+<div id="divScoreCard" class="scorecard" style="width:300px;position:absolute;top:0%;left:0%;">
     <div  style="color:white">
         <p >
-            <table id="tblCardScore" style="">
+            <table id="tblCardScore" style="cell-padding:10px;width:100%">
 
             </table>
         </p>
@@ -205,14 +205,14 @@
 <div id="divHandSummary" class="modal" role="dialog" aria-hidden="true">
     <div class="vertical-alignment-helper">
         <div class="modal-dialog vertical-align-center">
-            <div class="modal-content modal-content-bid d-flex" style="width:250px;">
-                <div class="modal-body hand-summary">
-                    <table id="divHandSummaryContent" style="z-index:6;">
+            <div class="modal-content modal-content-bid d-flex" style="width:50%;">
+                <div class="modal-body hand-summary" style="width:100%">
+                    <table id="divHandSummaryContent" style="z-index:6;width:100%;">
 
 
                     </table>
-                    <div id="divLeftInDeck"></div>
-                    <button onclick='Deal()'>OK</button>
+                    <div id="divLeftInDeck" class="left-in-deck"></div>
+                    <button onclick='Deal()' class="left-in-deck">OK</button>
                 </div>
 
             </div>
