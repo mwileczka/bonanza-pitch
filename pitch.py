@@ -12,6 +12,8 @@ def next_seat(idx):
 
 
 class Deck(list):
+    suits = 'CHSD'
+    ranks = '23456789TJQKA'
     card_set = [f'{x}{y}' for y in 'CHSD' for x in '23456789TJQKA']
 
     def __init__(self, cards=None):
@@ -28,14 +30,28 @@ class Deck(list):
     def shuffle(self):
         random.shuffle(self)
 
-    def draw(self, cnt=1):
-        if cnt > 0:
-            x = self[-cnt:]
-            del self[-cnt:]
+    def draw(self, cnt=1, suit=None):
+        if suit is None:
+            if cnt > 0:
+                x = self[-cnt:]
+                del self[-cnt:]
+            else:
+                x = self[0:-cnt]
+                del self[0:-cnt]
+            return Deck(x)
         else:
-            x = self[0:-cnt]
-            del self[0:-cnt]
-        return Deck(x)
+            x = self.suit(suit).draw(cnt)
+            for card in x:
+                self.remove(card)
+            if len(x) < abs(cnt):
+                if cnt > 0:
+                    cnt -= len(x)
+                else:
+                    cnt += len(x)
+                x.extend(self.draw(cnt))
+            return x
+
+
 
     def sort(self):
         super().sort(key=lambda x: Deck.ordinal(x))
@@ -97,7 +113,7 @@ class Deck(list):
         return lowest
 
     def suit_cnts(self):
-        cnts = {k: 0 for k in "SCDH"}
+        cnts = {k: 0 for k in Deck.suits}
         for card in self:
             if not card:
                 continue
@@ -183,6 +199,14 @@ class Seat:
 
 
 class Table:
+    class Rules:
+        def __init__(self, kitty_size=4, winning_score=64, hand_size=6, moon_cutoff=46, min_bid=1):
+            self.kitty_size = kitty_size
+            self.winning_score = winning_score
+            self.hand_size = hand_size
+            self.min_bid = min_bid
+            self.moon_cutoff = moon_cutoff
+
     @unique
     class State(Enum):
         WaitPlayers = 0
@@ -192,6 +216,10 @@ class Table:
         WaitDiscard = 4
         WaitPlay = 5
         WaitHand = 6
+
+    @unique
+    class TestMode(Enum):
+        Discard = 1
 
     def get_lobby_json(self):
         return {
@@ -203,7 +231,7 @@ class Table:
         for seat in self.seats:
             seat.tx(event, args)
 
-    def __init__(self, id=None):
+    def __init__(self, id=None, rules=None):
         self.trump = None
         self.dealer = 0  # TODO change this to none and assign random on first deal
         self.lead = None
@@ -223,6 +251,9 @@ class Table:
         self.trump_low = None
         self.discarded = Deck([])
         self.win_team = None
+        if rules is None:
+            rules = Table.Rules()
+        self.rules = rules
 
     def get_json(self):
         return {
@@ -277,10 +308,10 @@ class Table:
 
                 if self.bids[self.bidder] == 19:
                     if self.teams[bid_team].points == 18:
-                        self.teams[bid_team].score = 64
+                        self.teams[bid_team].score = self.rules.winning_score
                     else:
                         self.teams[bid_team].score = 0
-                        self.teams[other_team].score = 64
+                        self.teams[other_team].score = self.rules.winning_score
                 else:
                     if self.teams[bid_team].points >= self.bids[self.bidder]:
                         self.teams[bid_team].score += self.teams[bid_team].points
@@ -295,10 +326,10 @@ class Table:
 
                 # if both over 64, bidder wins
                 self.win_team = None
-                if self.teams[bid_team].score >= 64:
+                if self.teams[bid_team].score >= self.rules.winning_score:
                     # they won
                     self.win_team = bid_team
-                elif self.teams[other_team].score >= 64:
+                elif self.teams[other_team].score >= self.rules.winning_score:
                     # they won
                     self.win_team = other_team
 
@@ -375,7 +406,7 @@ class Table:
             self.seats[seat_idx].player = None
         self.update()
 
-    def deal(self, seat_idx, force=False):
+    def deal(self, seat_idx, force=False, test_mode=None):
         self.seats[seat_idx].state = Seat.State.Ready
 
         if force:
@@ -392,7 +423,7 @@ class Table:
         if not all([x.player for x in self.seats]):
             return
 
-        if self.teams[0].score >= 64 or self.teams[1].score >= 64:
+        if self.teams[0].score >= self.rules.winning_score or self.teams[1].score >= self.rules.winning_score:
             self.reset_for_game()
 
         self.reset_for_hand()
@@ -400,11 +431,18 @@ class Table:
         self.deck.reset()
         self.deck.shuffle()
 
-        for seat in self.seats:
-            seat.hand.extend(self.deck.draw(6))
-            seat.hand.sort()
+        if test_mode and test_mode == Table.TestMode.Discard.value:
+            for seat in self.seats:
+                seat.hand.extend(self.deck.draw(self.rules.hand_size, suit=Deck.suits[seat.idx]))
+                seat.hand.sort()
 
-        self.kitty.extend(self.deck.draw(4))
+            self.kitty.extend(self.deck.draw(self.rules.kitty_size))
+        else:
+            for seat in self.seats:
+                seat.hand.extend(self.deck.draw(self.rules.hand_size))
+                seat.hand.sort()
+
+            self.kitty.extend(self.deck.draw(self.rules.kitty_size))
 
         self.update()
 
@@ -413,11 +451,11 @@ class Table:
     def req_bid(self):
         highest_bid = max([x.bid for x in self.seats])
 
-        min_bid = max(highest_bid + 1, 1)
+        min_bid = max(highest_bid + 1, self.rules.min_bid)
 
         max_bid = 19
         for team in self.teams:
-            if team.score < 0 or team.score >= 46:
+            if team.score < 0 or team.score >= self.rules.moon_cutoff:
                 max_bid = 18
 
         self.state = Table.State.WaitBid
@@ -444,6 +482,8 @@ class Table:
             seat.hand.keep_suit(self.trump)
             seat.kept = len(seat.hand)
 
+        self.seats[self.turn].hand.extend(self.kitty.suit(self.trump))
+
         self.update()
 
         self.req_discard()
@@ -451,12 +491,9 @@ class Table:
     def req_discard(self):
         self.state = Table.State.WaitDiscard
 
-        if len(self.kitty):
-            self.seats[self.turn].hand.extend(self.kitty)
-
         if self.turn_seat.player:
             self.turn_seat.player.req_discard(
-                len(self.turn_seat.hand) - 6 if len(self.turn_seat.hand) > 6 else 0,
+                len(self.turn_seat.hand) - self.rules.hand_size if len(self.turn_seat.hand) > self.rules.hand_size else 0,
                 list(self.kitty)
             )
 
@@ -478,7 +515,7 @@ class Table:
     def req_play(self):
         self.state = Table.State.WaitPlay
         if not self.lead:
-            if len(self.turn_seat.hand) == 6:
+            if len(self.turn_seat.hand) == self.rules.hand_size:
                 # first play of first trick
                 playable = self.turn_seat.hand.suit(self.trump)
             else:
@@ -597,15 +634,15 @@ class Table:
             self.discarded.append(card)
             self.turn_seat.hand.remove(card)
 
-        if len(self.turn_seat.hand) > 6:
+        if len(self.turn_seat.hand) > self.rules.hand_size:
             self.req_discard()
             return
 
         self.kitty.clear()
 
         for seat in self.seats:
-            if len(seat.hand) < 6:
-                seat.hand.extend(self.deck.draw(6 - len(seat.hand)))
+            if len(seat.hand) < self.rules.hand_size:
+                seat.hand.extend(self.deck.draw(self.rules.hand_size - len(seat.hand)))
             seat.hand.sort()
             seat.played = None
 
