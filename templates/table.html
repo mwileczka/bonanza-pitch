@@ -48,6 +48,10 @@
                 console.log('request suit', data)
                 OnRequestSuit(data);
             });
+            socket.on('req_kitty', function (data) {
+                console.log('request kitty', data)
+                OnRequestKitty(data);
+            });
             socket.on('req_deal', function (data) {
                 console.log('request deal', data)
                 OnRequestDeal(data);
@@ -215,6 +219,7 @@
         <div class="modal-dialog vertical-align-center">
             <div class="modal-content modal-content-bid">
                 <div class="modal-body">
+                    <div id="divHandKitty" style="height:20vh" class="col hand hhand-compact"></div>
                     <button type="button" class="btn btn-primary" onclick='KittyMessageOK()'>Continue</button>
                 </div>
 
