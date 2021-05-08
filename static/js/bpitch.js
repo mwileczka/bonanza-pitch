@@ -52,9 +52,9 @@ function RefreshTable(state){
     RefreshKitty(state.kitty_cnt);
 
     if (state.turn !== seat)
-        $('#divMessage').html('Waiting for ' + state.seats[state.turn].name);
+        UpdateMessage('Waiting for ' + state.seats[state.turn].name, state.turn === seat);
     else
-        $('#divMessage').html("");
+        UpdateMessage('', false);
     RefreshScore();
 }
 function RefreshScore(){
@@ -128,14 +128,16 @@ function removeAllChildNodes(parent) {
 }
 function OnRequestBid(req_bid){
     SetBidOptions(req_bid.min, req_bid.max);
-    $('#divMessage').html("Your turn to bid");
-     $('#divBid').show();
+    UpdateMessage("Your turn to bid", true)
+
+    $('#divBid').show();
 }
 function OnRequestSuit(data){
-    $('#divMessage').html();
+    UpdateMessage("Select a suit", true)
     $( "#divSelectSuit" ).show();
 }
 function OnRequestKitty(data){
+    UpdateMessage('View Kitty and Press Continue', true);
     $( "#divHandKitty" ).html('');
     for(var i = 0 ; i < data.length ; i++)
         AddCardToHand(data[i], 'divHandKitty');
@@ -151,8 +153,8 @@ function OnRequestDiscard(data){
         discardMode = true;
         var msg = "Discard " + data.cnt + " card";
         if (data.cnt > 1){msg += "s";}
-        $('#divMessage').html(msg);
 
+UpdateMessage(msg, true)
          var hand = tableState.seats[seat].hand;
          for (var i = 0 ; i < hand.length ; i++){
             var img = document.getElementById("card_" + hand[i]);
@@ -161,6 +163,7 @@ function OnRequestDiscard(data){
     }
 }
 function KittyMessageOK(){
+    UpdateMessage('',false);
     $( "#divKittyMessageModal" ).hide();
     socket.emit('kitty');
 }
@@ -173,7 +176,8 @@ function OnRequestPlay(data){
         var img = document.getElementById("card_" + data[i]);
         img.classList.add("playableCard");
     }
-    $('#divMessage').html("It's your turn");
+    UpdateMessage("It's your turn", true);
+
 }
 function Deal(){
     socket.emit('deal',{});
@@ -436,12 +440,18 @@ function CreateBidButton(txt, enabled, val){
     return btn;
 }
 
+function UpdateMessage(msg, blink){
+    $('#divMessage').html(msg);
+    if (blink){$('#divMessage').addClass("blink_me");} else {$('#divMessage').removeClass("blink_me");}
+}
+
 function SendBid(bid){
 
     $( "#divBid" ).hide();
     socket.emit('bid', bid);
-    $('#divMessage').html("");
+    UpdateMessage('', false);
 }
+
 function OnSelectSuit(suit){
     socket.emit('suit', suit);
     tableState.trump = suit;
@@ -468,12 +478,12 @@ function OnCardClick(theCard, hand){
         if (discardMode){
             discardMode = false;
             socket.emit('discard', theCard);
-            $('#divMessage').html("");
+            UpdateMessage('', false);
         }
         else if (PlayableCards.includes(theCard)){
             socket.emit('play', theCard);
             PlayableCards = [];
-            $('#divMessage').html("");
+            UpdateMessage('', false);
         }
     }
 }

@@ -233,3 +233,11 @@ height:inherit;
 /* To center horizontally */
 margin: 0 auto;
 pointer-events:all;}
+
+.blink_me {
+  animation: blinker 1s linear infinite;
+}
+
+@keyframes blinker {
+  50% { opacity: 0; }
+}
