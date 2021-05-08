@@ -482,7 +482,9 @@ class Table:
             seat.hand.keep_suit(self.trump)
             seat.kept = len(seat.hand)
 
-        self.seats[self.turn].hand.extend(self.kitty.suit(self.trump))
+        self.turn_seat.hand.extend(self.kitty.suit(self.trump))
+
+        self.turn_seat.hand.sort()
 
         self.update()
 

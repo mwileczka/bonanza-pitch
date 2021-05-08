@@ -54,7 +54,7 @@
             });
             socket.on('req_discard', function (data) {
                 console.log('request discard', data)
-                // TODO send back a discard
+                OnRequestDiscard(data);
             });
             socket.on('req_play', function (data) {
                 console.log('request play', data)
@@ -64,9 +64,9 @@
                 console.log('score', data);
                 // TODO update scoreboard
             });
-            socket.on('req_discard', function(data){
-                console.log('request play', data);
-                OnRequestDiscard(data);
+            socket.on('dialog', function(data){
+                console.log('dialog', data);
+                // TODO show dialog
             });
 
             socket.on('kick', function () {
