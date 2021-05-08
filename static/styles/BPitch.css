@@ -29,6 +29,7 @@ body {
 	z-index:10;
 }
 
+
 .playedCardTop{
 	margin-bottom:-5vh;
 }
@@ -139,12 +140,47 @@ body {
 div.scorecard{
 	color: white;
 	background-color: #404040;
+	font-size: 3vh;
 	/*margin-bottom: 1rem!important;*/
 }
 div.hand-summary{
 	background-color:#C0C0C0;
 	text-align:center;
 }
+th.hand-summary-left{
+	border-bottom: 1px solid white;
+	width:50%;
+}
+th.hand-summary-right{
+	border-bottom: 1px solid white;
+	border-left: 1px solid white;
+}
+tr.hand-summary{
+	font-size: 2vh;
+	border-bottom: 1px solid white;
+}
+td.hand-summary-right{
+	border-left: 1px solid white;
+}
+td.hand-summary-old-score{
+	text-decoration: line-through;
+}
+td.hand-summary-current-score{
+	font-size: 2vh;
+}
+td.hand-summary-winner{
+	background-color:yellow;
+}
+td.hand-summary-point-cards-left{
+	border-bottom: 1px solid white;
+}
+td.hand-summary-point-cards-right{
+	border-left: 1px solid white;border-bottom: 1px solid white;
+}
+div.left-in-deck{
+	font-size:1.5vh;
+}
+
 
 /*body {
 	position:relative;

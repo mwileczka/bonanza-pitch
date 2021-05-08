@@ -67,13 +67,21 @@ function RefreshScore(){
     var tr1 = document.createElement("tr");
     tbl.appendChild(tr1);
     var th = document.createElement("th");
-    th.setAttribute("style", "border-bottom: 1px solid white;")
-    th.innerHTML = tableState.seats[0].name + " & " + tableState.seats[2].name;
+    th.setAttribute("style", "border-bottom: 1px solid white;width:50%;")
+    if (seat === 0 || seat === 2)
+        th.innerHTML = "Us";
+    else
+        th.innerHTML = "Them";
+        //th.innerHTML = tableState.seats[0].name + " & " + tableState.seats[2].name;
     tr1.appendChild(th);
 
     th = document.createElement("th");
-    th.innerHTML = tableState.seats[1].name + " & " + tableState.seats[3].name;
-    th.setAttribute("style", "border-bottom: 1px solid white; border-left: 1px solid white;")
+    //th.innerHTML = tableState.seats[1].name + " & " + tableState.seats[3].name;
+    if (seat === 1 || seat === 3)
+        th.innerHTML = "Us";
+    else
+        th.innerHTML = "Them";
+    th.setAttribute("style", "border-bottom: 1px solid white; border-left: 1px solid white;width:50%;")
     tr1.appendChild(th);
 
 
@@ -93,6 +101,7 @@ function RefreshScore(){
         for (i=0;i < tableState.teams.length ; i++)
         {
             td = document.createElement("td");
+            td.setAttribute("style", "font-size:1.5vh;")
             str = "";
             for (j=0 ; j< tableState.teams[i].cards_won.length ; j++){
                 var c = tableState.teams[i].cards_won[j];
@@ -102,7 +111,7 @@ function RefreshScore(){
             }
 
             td.innerHTML = str.trim();
-            if (i === 1) {td.setAttribute("style", "border-left: 1px solid white;");}
+            if (i === 1) {td.setAttribute("style", "border-left: 1px solid white;font-size:1.5vh;");}
             tr.appendChild(td);
         }
 
@@ -130,6 +139,31 @@ function OnRequestDeal(data){
     RefreshEndOfHandScore(data)
     $( "#divHandSummary" ).show();
 }
+var discardMode = false;
+function OnRequestDiscard(data){
+    if (data.cnt > 0) {
+        discardMode = true;
+        var msg = "Discard " + data.cnt + " card";
+        if (data.cnt > 1){msg += "s";}
+        $('#divMessage').html(msg);
+
+         var hand = tableState.seats[seat].hand;
+         for (var i = 0 ; i < hand.length ; i++){
+            var img = document.getElementById("card_" + hand[i]);
+            img.classList.add("playableCard");
+         }
+    }
+}
+var PlayableCards = [];
+function OnRequestPlay(data){
+    PlayableCards = data;
+    var i = 0;
+    for (i = 0 ; i < data.length ; i++){
+        var img = document.getElementById("card_" + data[i]);
+        img.classList.add("playableCard");
+    }
+    $('#divMessage').html("It's your turn");
+}
 function Deal(){
     socket.emit('deal',{});
     $( '#divHandSummary' ).hide();
@@ -144,16 +178,26 @@ function RefreshEndOfHandScore(data){
         removeAllChildNodes(tbl);
 
         tr = document.createElement("tr");
+        tr.setAttribute("style", "font-size: 2vh;")
         tbl.appendChild(tr);
 
         var th = document.createElement("th");
-        th.setAttribute("style", "border-bottom: 1px solid white;")
-        th.innerHTML = tableState.seats[0].name + " & " + tableState.seats[2].name;
+        th.setAttribute("class", "hand-summary-left")
+        if (seat === 0 || seat === 2)
+            th.innerHTML = "Us";
+        else
+            th.innerHTML = "Them";
+
+        //th.innerHTML = tableState.seats[0].name + " & " + tableState.seats[2].name;
         tr.appendChild(th);
 
         th = document.createElement("th");
-        th.innerHTML = tableState.seats[1].name + " & " + tableState.seats[3].name;
-        th.setAttribute("style", "border-bottom: 1px solid white; border-left: 1px solid white;")
+        if (seat === 1 || seat === 3)
+            th.innerHTML = "Us";
+        else
+            th.innerHTML = "Them";
+        //th.innerHTML = tableState.seats[1].name + " & " + tableState.seats[3].name;
+        th.setAttribute("class", "hand-summary-right")
         tr.appendChild(th);
 
         //scores
@@ -162,17 +206,17 @@ function RefreshEndOfHandScore(data){
             var style = "";
             var spanStyle0 = "";
             var spanStyle1 = "";
-            if (i !== data.scores.length - 1){ style += "text-decoration: line-through;"}
+            if (i !== data.scores.length - 1){ style += "hand-summary-old-score "}
             else{
-                if (data.game_winner === 1){spanStyle1 = 'background-color:yellow';}
-                else if (data.game_winner === 0){spanStyle0 = 'background-color:yellow';}
-                style += "border-bottom: 1px solid white;"
+                if (data.game_winner === 1){spanStyle1 += 'hand-summary-winner ';}
+                else if (data.game_winner === 0){spanStyle0 = 'hand-summary-winner ';}
             }
 
             tr = document.createElement("tr");
+            tr.setAttribute("class", "hand-summary ")
             tbl.appendChild(tr);
             td = document.createElement("td");
-            td.setAttribute("style", style + spanStyle0)
+            td.setAttribute("class", style + spanStyle0)
 
             td.innerHTML = data.scores[i][0];
             tr.appendChild(td);
@@ -180,13 +224,14 @@ function RefreshEndOfHandScore(data){
             td = document.createElement("td");
             td.innerHTML = data.scores[i][1];
 
-            style += "border-left: 1px solid white;";
-            td.setAttribute("style", style + spanStyle1)
+            style += "hand-summary-right ";
+            td.setAttribute("class", style + spanStyle1)
             tr.appendChild(td);
         }
 
          //point cards
         tr = document.createElement("tr");
+        tr.setAttribute("style", "font-size: 1.5vh;")
         tbl.appendChild(tr);
         for (i=0;i < data.point_cards.length ; i++)
         {
@@ -197,14 +242,15 @@ function RefreshEndOfHandScore(data){
             }
 
             td.innerHTML = str.trim();
-            if (i === 1) {td.setAttribute("style", "border-left: 1px solid white;");}
+            if (i === 1) {td.setAttribute("class", "hand-summary-point-cards-right ");}
+            else {td.setAttribute("class", "hand-summary-point-cards-left ");}
             tr.appendChild(td);
         }
         var divLeftInDeck= document.getElementById("divLeftInDeck");
 
         if (data.deck_trump.length === 0)
         {
-            divLeftInDeck.innerHTML= "No trump left in deck."
+            divLeftInDeck.innerHTML= "No trump left in deck"
         }
         else
         {
@@ -406,23 +452,19 @@ function AddCardToHand(card, hand){
 }
 function OnCardClick(theCard, hand){
     if (hand==='divHandSouth'){
-        if (PlayableCards.includes(theCard)){
+        if (discardMode){
+            discardMode = false;
+            socket.emit('discard', theCard);
+            $('#divMessage').html("");
+        }
+        else if (PlayableCards.includes(theCard)){
             socket.emit('play', theCard);
             PlayableCards = [];
             $('#divMessage').html("");
         }
     }
 }
-var PlayableCards = [];
-function OnRequestPlay(data){
-    PlayableCards = data;
-    var i = 0;
-    for (i = 0 ; i < data.length ; i++){
-        var img = document.getElementById("card_" + data[i]);
-        img.classList.add("playableCard");
-    }
-    $('#divMessage').html("It's your turn");
-}
+
 
 function SetPlayCard(card, elem, grayed){
     var container = document.getElementById(elem);
