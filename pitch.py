@@ -660,6 +660,7 @@ class Table:
                 return
             self.discarded.append(card)
             self.turn_seat.hand.remove(card)
+            self.turn_seat.tx_hand()
 
         if len(self.turn_seat.hand) > self.rules.hand_size:
             self.req_discard()
@@ -773,7 +774,7 @@ class Player(ABC):
     def req_play(self, playable):
         self.tx('req_play', list(playable))
 
-    def req_discard(self, cnt, kitty):
+    def req_discard(self, cnt):
         self.tx('req_discard', {
             'cnt': cnt
         })
