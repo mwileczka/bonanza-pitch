@@ -139,6 +139,31 @@ function OnRequestDeal(data){
     RefreshEndOfHandScore(data)
     $( "#divHandSummary" ).show();
 }
+var discardMode = false;
+function OnRequestDiscard(data){
+    if (data.cnt > 0) {
+        discardMode = true;
+        var msg = "Discard " + data.cnt + " card";
+        if (data.cnt > 1){msg += "s";}
+        $('#divMessage').html(msg);
+
+         var hand = tableState.seats[seat].hand;
+         for (var i = 0 ; i < hand.length ; i++){
+            var img = document.getElementById("card_" + hand[i]);
+            img.classList.add("playableCard");
+         }
+    }
+}
+var PlayableCards = [];
+function OnRequestPlay(data){
+    PlayableCards = data;
+    var i = 0;
+    for (i = 0 ; i < data.length ; i++){
+        var img = document.getElementById("card_" + data[i]);
+        img.classList.add("playableCard");
+    }
+    $('#divMessage').html("It's your turn");
+}
 function Deal(){
     socket.emit('deal',{});
     $( '#divHandSummary' ).hide();
@@ -422,23 +447,19 @@ function AddCardToHand(card, hand){
 }
 function OnCardClick(theCard, hand){
     if (hand==='divHandSouth'){
-        if (PlayableCards.includes(theCard)){
+        if (discardMode){
+            discardMode = false;
+            socket.emit('discard', theCard);
+            $('#divMessage').html("");
+        }
+        else if (PlayableCards.includes(theCard)){
             socket.emit('play', theCard);
             PlayableCards = [];
             $('#divMessage').html("");
         }
     }
 }
-var PlayableCards = [];
-function OnRequestPlay(data){
-    PlayableCards = data;
-    var i = 0;
-    for (i = 0 ; i < data.length ; i++){
-        var img = document.getElementById("card_" + data[i]);
-        img.classList.add("playableCard");
-    }
-    $('#divMessage').html("It's your turn");
-}
+
 
 function SetPlayCard(card, elem, grayed){
     var container = document.getElementById(elem);

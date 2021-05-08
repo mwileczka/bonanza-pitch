@@ -64,6 +64,10 @@
                 console.log('score', data);
                 // TODO update scoreboard
             });
+            socket.on('req_discard', function(data){
+                console.log('request play', data);
+                OnRequestDiscard(data);
+            });
 
             socket.on('kick', function () {
                 leave_table();
