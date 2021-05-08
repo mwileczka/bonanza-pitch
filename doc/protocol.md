@@ -49,25 +49,23 @@ headers:{
 ```
 Upon websocket connection, the client will start receiving data updates and requests.
 
-
-
 ```mermaid
+
 stateDiagram-v2
   [*] --> ReqDeal: 4 Players
   ReqDeal --> ReqBid: Deal (x4)
   ReqBid --> ReqBid: Bid (non-winning)
   ReqBid --> ReqSuit: Bid (winning)
-  ReqSuit --> ReqDiscard: Suit (> 6)
-  ReqSuit --> ReqPlay: Suit (<= 6)
-  ReqDiscard --> ReqPlay: Discard (<= 6)
-  ReqDiscard --> ReqDiscard: Discard (> 6)
+  ReqSuit --> ReqKitty: Suit
+  ReqKitty --> ReqPlay: Kitty (H <= 6)
+  ReqKitty --> ReqDiscard: Kitty (H > 6)
+  ReqDiscard --> ReqPlay: Discard (H <= 6)
+  ReqDiscard --> ReqDiscard: Discard (H > 6)
   ReqPlay --> ReqPlay: Play (non-last)
   ReqPlay --> Table: Play (last)
   Table --> ReqPlay: delay
   Table --> ReqDeal: End of Hand/Game
 ```
-
-
 
 
 
@@ -204,6 +202,7 @@ args: {
 event: 'deal'
 args: {
   force: bool
+  test_mode: int
 }
 ```
 NOTE: force should only be used for debugging purposes
@@ -249,6 +248,22 @@ event: 'suit'
 args: str (suit)
 ```
 
+# Kitty
+
+## Request Kitty
+
+```
+event: 'req_kitty'
+args: [ str (str), ... ]
+```
+
+## Kitty
+
+```
+event: 'kitty'
+args:
+```
+
 # Discarding
 
 ## Request Discard
@@ -256,7 +271,6 @@ Server sends to client only if >6 trump cards after taking kitty.
 ```
 event: 'req_discard'
 args: {
-    kitty: [ str (suit), ... ]
     cnt: int
 }
 ```
@@ -285,7 +299,6 @@ event: 'play'
 args: str (card)
 ```
 
-
 # Utility
 
 ## Log
@@ -312,8 +325,6 @@ args: {
   cards: [ str (card), ... ]
 }
 ```
-
-
 
 # Admin & Debugging
 

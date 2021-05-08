@@ -213,9 +213,10 @@ class Table:
         WaitDeal = 1
         WaitBid = 2
         WaitSuit = 3
-        WaitDiscard = 4
-        WaitPlay = 5
-        WaitHand = 6
+        WaitKitty = 4
+        WaitDiscard = 5
+        WaitPlay = 6
+        WaitHand = 7
 
     @unique
     class TestMode(Enum):
@@ -364,6 +365,8 @@ class Table:
             self.req_discard()
         elif self.state == Table.State.WaitPlay:
             self.req_play()
+        elif self.state == Table.State.WaitKitty:
+            self.req_show_kitty()
         elif self.state == Table.State.WaitHand:
             pass
 
@@ -477,32 +480,22 @@ class Table:
         else:
             self.dealer += 1
 
-    def suit(self, s):
+    def suit(self, seat_idx, s):
         self.trump = s
 
         for seat in self.seats:
             seat.hand.keep_suit(self.trump)
             seat.kept = len(seat.hand)
 
-        self.turn_seat.hand.extend(self.kitty.suit(self.trump))
-
-        self.turn_seat.hand.sort()
-
         self.update()
 
-        self.req_discard()
+        self.req_show_kitty()
 
     def req_discard(self):
         self.state = Table.State.WaitDiscard
 
-        self.turn_seat.tx_hand()
-
         if self.turn_seat.player:
-            self.turn_seat.player.req_discard(
-                len(self.turn_seat.hand) - self.rules.hand_size if
-                len(self.turn_seat.hand) > self.rules.hand_size else 0,
-                list(self.kitty)
-            )
+            self.turn_seat.player.req_discard(len(self.turn_seat.hand) - self.rules.hand_size)
 
     def req_deal(self):
         self.state = Table.State.WaitDeal
@@ -629,6 +622,33 @@ class Table:
         if self.turn_seat.player:
             self.turn_seat.player.req_suit()
 
+    def req_show_kitty(self):
+        self.state = Table.State.WaitKitty
+        if self.turn_seat.player:
+            self.turn_seat.player.req_kitty(list(self.kitty))
+
+    def show_kitty(self, seat_idx):
+        if seat_idx != self.turn:
+            print('ERROR: received out of turn kitty')
+            return
+
+        self.turn_seat.hand.extend(self.kitty.suit(self.trump))
+        self.turn_seat.hand.sort()
+        self.kitty.clear()
+
+        for seat in self.seats:
+            if len(seat.hand) < self.rules.hand_size:
+                seat.hand.extend(self.deck.draw(self.rules.hand_size - len(seat.hand)))
+            seat.hand.sort()
+            seat.played = None
+
+        self.update()
+
+        if len(self.turn_seat.hand) > self.rules.hand_size:
+            self.req_discard()
+        else:
+            self.req_play()
+
     def discard(self, seat_idx, card):
         if seat_idx != self.turn:
             print('ERROR: received out of turn discard')
@@ -645,19 +665,9 @@ class Table:
             self.req_discard()
             return
 
-        self.kitty.clear()
-
-        for seat in self.seats:
-            if len(seat.hand) < self.rules.hand_size:
-                seat.hand.extend(self.deck.draw(self.rules.hand_size - len(seat.hand)))
-            seat.hand.sort()
-            seat.played = None
-
-        self.update()
-
         if len(self.discarded) > 0:
             self.dialog(
-                f"{self.turn_seat.player.username if self.turn_seat.player else 'Bidder'} discarded trump",
+                f"{self.turn_seat.player.username if self.turn_seat.player else 'Bidder'} discarded {len(self.discarded)} trump.",
                 list(self.discarded)
             )
 
@@ -765,6 +775,8 @@ class Player(ABC):
 
     def req_discard(self, cnt, kitty):
         self.tx('req_discard', {
-            'cnt': cnt,
-            'kitty': kitty
+            'cnt': cnt
         })
+
+    def req_kitty(self, kitty):
+        self.tx('req_kitty', kitty)

@@ -259,7 +259,6 @@ class TableNamespace(Namespace):
     def on_bid(self, args):
         print("Got bid", args)
         table_name = session.get('table')
-        username = session.get('username')
         seat = session.get('seat')
         t = tables[table_name]
         t.bid(seat, args)
@@ -267,11 +266,16 @@ class TableNamespace(Namespace):
     def on_suit(self, args):
         print("Got suit", args)
         table_name = session.get('table')
-        username = session.get('username')
         seat = session.get('seat')
         t = tables[table_name]
-        t.suit(args)
+        t.suit(seat, args)
 
+    def on_kitty(self):
+        print("Got kitty")
+        table_name = session.get('table')
+        seat = session.get('seat')
+        t = tables[table_name]
+        t.show_kitty(seat)
 
 def update_lobby():
     socketio.emit('lobby', [t.get_lobby_json() for t in tables.values()], to='lobby', namespace='/lobby')
