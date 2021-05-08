@@ -200,6 +200,20 @@ function RefreshEndOfHandScore(data){
             if (i === 1) {td.setAttribute("style", "border-left: 1px solid white;");}
             tr.appendChild(td);
         }
+        var divLeftInDeck= document.getElementById("divLeftInDeck");
+
+        if (data.deck_trump.length === 0)
+        {
+            divLeftInDeck.innerHTML= "No trump left in deck."
+        }
+        else
+        {
+            divLeftInDeck.innerHTML = "Trump in Deck: "
+            for (i = 0 ; i < data.deck_trump.length ; i++)
+            {
+               divLeftInDeck.innerHTML += GetCardHTML(data.deck_trump[i] + " ");
+            }
+        }
 
         $('#divScoreCard').show();
     }else{
