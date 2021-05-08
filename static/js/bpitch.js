@@ -152,8 +152,21 @@ function OnRequestDiscard(data){
             var img = document.getElementById("card_" + hand[i]);
             img.classList.add("playableCard");
          }
+    }else{
+        var msg = "Kitty Contained: ";
+        for (var i = 0 ; i < data.kitty.length ; i++)
+        {
+            msg += GetCardHTML(data.kitty[i] ) + " ";
+        }
+        $( "#divKittyMessage" ).html(msg);
+        $( "#divKittyMessageModal" ).show();
     }
 }
+function KittyMessageOK(){
+    $( "#divKittyMessageModal" ).hide();
+    socket.emit('discard', null);
+}
+
 var PlayableCards = [];
 function OnRequestPlay(data){
     PlayableCards = data;
@@ -347,7 +360,9 @@ function RefreshPlayerDisplay(seatNum, NSEW){
         str += "Pass";
     }
     else if (seat.bid !== null && seat.bid > 0){
-        str += "Bid: " + seat.bid;
+        str += "Bid: ";
+        if (seat.bid === 19){str += "Moon "}
+        else{str += seat.bid;}
     }
 
     if (tableState.bidder === seatNum){

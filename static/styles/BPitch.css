@@ -147,6 +147,7 @@ div.hand-summary{
 	background-color:#C0C0C0;
 	text-align:center;
 }
+
 th.hand-summary-left{
 	border-bottom: 1px solid white;
 	width:50%;
@@ -180,7 +181,10 @@ td.hand-summary-point-cards-right{
 div.left-in-deck{
 	font-size:1.5vh;
 }
-
+div.kitty-summary{
+	background-color:blue;
+	text-align:center;
+}
 
 /*body {
 	position:relative;
