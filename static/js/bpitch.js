@@ -135,6 +135,10 @@ function OnRequestSuit(data){
     $('#divMessage').html();
     $( "#divSelectSuit" ).show();
 }
+function OnRequestKitty(data){
+    for(var i = 0 ; i < data.length ; i++)
+        AddCardToHand(data[i], 'divHandKitty');
+}
 function OnRequestDeal(data){
     RefreshEndOfHandScore(data)
     $( "#divHandSummary" ).show();
@@ -152,19 +156,11 @@ function OnRequestDiscard(data){
             var img = document.getElementById("card_" + hand[i]);
             img.classList.add("playableCard");
          }
-    }else{
-        var msg = "Kitty Contained: ";
-        for (var i = 0 ; i < data.kitty.length ; i++)
-        {
-            msg += GetCardHTML(data.kitty[i] ) + " ";
-        }
-        $( "#divKittyMessage" ).html(msg);
-        $( "#divKittyMessageModal" ).show();
     }
 }
 function KittyMessageOK(){
     $( "#divKittyMessageModal" ).hide();
-    socket.emit('discard', null);
+    socket.emit('kitty', null);
 }
 
 var PlayableCards = [];
