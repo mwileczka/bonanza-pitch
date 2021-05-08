@@ -103,8 +103,6 @@ args: {
   deck_cnt: int
   kitty_cnt: int
   
-  deck_trump: [ str (card), ... ] (only on wait for deal)
-  
   seats:[
     {
       name: str
@@ -197,6 +195,7 @@ args: {
     points: [int, int]
     point_cards: [[str (card), ...], [str (card), ...]]
     hand_cnt: int
+    deck_trump: [ str (card), ... ]
 }
 ```
 ## Deal

@@ -244,8 +244,7 @@ class Table:
             'winner': self.winner,
             'bid': self.seats[self.bidder].bid if self.bidder else None,
             'state': self.state.value,
-            'hand_cnt': self.hand_cnt,
-            'deck_trump': list(self.deck.suit(self.trump)) if self.state == Table.State.WaitDeal else []
+            'hand_cnt': self.hand_cnt
         }
 
     def check(self):
@@ -446,6 +445,9 @@ class Table:
             seat.kept = len(seat.hand)
 
         # TODO send req discard
+
+
+
         discard = self.seats[self.turn].kept - 6
         if discard > 0:
             self.seats[self.turn].hand.sort()
@@ -463,8 +465,8 @@ class Table:
         self.req_play()
 
     def req_discard(self):
-        # TODO
-        pass
+        self.turn_seat
+
 
     def req_deal(self, winner=None):
         self.state = Table.State.WaitDeal
@@ -477,7 +479,8 @@ class Table:
             'game_winner': winner,
             'points': [x.score for x in self.teams],
             'point_cards': [x.point_cards for x in self.teams],
-            'hand_cnt': self.hand_cnt
+            'hand_cnt': self.hand_cnt,
+            'deck_trump': list(self.deck.suit(self.trump)) if self.state == Table.State.WaitDeal else []
         })
 
     def req_play(self):
