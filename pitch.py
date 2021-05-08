@@ -33,25 +33,21 @@ class Deck(list):
     def draw(self, cnt=1, suit=None):
         if suit is None:
             if cnt > 0:
-                x = self[-cnt:]
+                x = Deck(self[-cnt:])
                 del self[-cnt:]
             else:
-                x = self[0:-cnt]
+                x = Deck(self[0:-cnt])
                 del self[0:-cnt]
-            return Deck(x)
         else:
             x = self.suit(suit).draw(cnt)
-            for card in x:
-                self.remove(card)
+            self.reduce(x)
             if len(x) < abs(cnt):
                 if cnt > 0:
                     cnt -= len(x)
                 else:
                     cnt += len(x)
                 x.extend(self.draw(cnt))
-            return x
-
-
+        return x
 
     def sort(self):
         super().sort(key=lambda x: Deck.ordinal(x))
@@ -129,6 +125,10 @@ class Deck(list):
                 highest_cnt = cnt
                 highest_suit = suit
         return highest_suit
+
+    def reduce(self, cards_to_remove):
+        for card in cards_to_remove:
+            self.remove(card)
 
 
 class Team:
@@ -254,6 +254,7 @@ class Table:
         if rules is None:
             rules = Table.Rules()
         self.rules = rules
+        self.test_mode = None
 
     def get_json(self):
         return {
@@ -386,6 +387,7 @@ class Table:
             seat.reset_for_hand()
         self.trump_high = None
         self.trump_low = None
+        self.test_mode = None
 
     def reset_for_game(self):
         # TODO - add anything else?
@@ -431,18 +433,18 @@ class Table:
         self.deck.reset()
         self.deck.shuffle()
 
-        if test_mode and test_mode == Table.TestMode.Discard.value:
+        self.test_mode = test_mode
+
+        if self.test_mode and self.test_mode == Table.TestMode.Discard.value:
             for seat in self.seats:
                 seat.hand.extend(self.deck.draw(self.rules.hand_size, suit=Deck.suits[seat.idx]))
                 seat.hand.sort()
-
-            self.kitty.extend(self.deck.draw(self.rules.kitty_size))
         else:
             for seat in self.seats:
                 seat.hand.extend(self.deck.draw(self.rules.hand_size))
                 seat.hand.sort()
 
-            self.kitty.extend(self.deck.draw(self.rules.kitty_size))
+        self.kitty.extend(self.deck.draw(self.rules.kitty_size))
 
         self.update()
 
