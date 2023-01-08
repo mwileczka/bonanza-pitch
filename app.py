@@ -5,7 +5,7 @@ import math
 from flask import Flask, render_template, request, redirect, url_for, session
 from flask_socketio import SocketIO, join_room, leave_room, emit, Namespace, rooms
 import flask_socketio
-from bot import bot_client_proc, bot_client_username
+from bot import bot_client_proc, bot_client_username, BotPlayerClient
 
 from flask_session import Session
 from pitch import Table, Deck, Player, Seat
@@ -205,6 +205,11 @@ class TableNamespace(Namespace):
             for t in tables.values():
                 t.check()
 
+            for bk in list(bot_clients.keys()):
+                if not bot_clients[bk].is_in_use():
+                    print(f"Removing bot {bot_clients[bk].username}")
+                    del bot_clients[bk]
+
             # socketio.emit('status', {'msg': f'count is {count}'}, namespace=self.namespace)
 
             if '/table' not in socketio.server.manager.rooms:
@@ -250,11 +255,13 @@ class TableNamespace(Namespace):
         t = tables[table_name]
         for idx in range(0, 4):
             if not t.seats[idx].player:
-                proc = multiprocessing.Process(
-                    target=bot_client_proc,
-                    args=(table_name, idx, bot_client_username(), 'http://127.0.0.1:5000'))
-                proc.start()
-                bot_clients[(table_name, idx)] = proc
+                # proc = multiprocessing.Process(
+                #    target=bot_client_proc,
+                #    args=(table_name, idx, bot_client_username(), 'http://127.0.0.1:5000'))
+                # proc.start()
+                bot = BotPlayerClient(table=table_name, seat=idx,
+                                      username=bot_client_username(), url='http://127.0.0.1:5000')
+                bot_clients[(table_name, idx)] = bot
 
     def on_bid(self, args):
         print("Got bid", args)

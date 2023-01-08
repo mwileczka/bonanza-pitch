@@ -76,7 +76,6 @@ class BotPlayerClient:
 
     def on_disconnect(self):
         print('disconnected from server...exiting')
-        exit()
 
     def on_table(self, args):
         self.table = args
@@ -134,3 +133,6 @@ class BotPlayerClient:
     def on_req_deal(self, args):
         self.sio.sleep(random.randint(0, 3))
         self.tx('deal', {})
+
+    def is_in_use(self):
+        return self.sio.connected

@@ -1,0 +1,6 @@
+name: bonanza-pitch
+services:
+- name: web
+  github:
+    repo: mwileczka/bonanza-pitch
+    branch: master
