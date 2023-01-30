@@ -1,7 +1,7 @@
 import pprint
 import time
 import math
-
+import os
 from flask import Flask, render_template, request, redirect, url_for, session
 from flask_socketio import SocketIO, join_room, leave_room, emit, Namespace, rooms
 import flask_socketio
@@ -260,7 +260,8 @@ class TableNamespace(Namespace):
                 #    args=(table_name, idx, bot_client_username(), 'http://127.0.0.1:5000'))
                 # proc.start()
                 bot = BotPlayerClient(table=table_name, seat=idx,
-                                      username=bot_client_username(), url='http://127.0.0.1:8080')
+                                      username=bot_client_username(),
+                                      url=f'http://127.0.0.1:{os.environ.get("PORT",5000)}')
                 bot_clients[(table_name, idx)] = bot
 
     def on_bid(self, args):
@@ -322,4 +323,5 @@ socketio.on_namespace(TableNamespace('/table'))
 socketio.on_namespace(LobbyNamespace('/lobby'))
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=8080)
+    port = os.environ.setdefault('PORT', 5000)
+    socketio.run(app, host='0.0.0.0', port=port)
