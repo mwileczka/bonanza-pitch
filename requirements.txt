@@ -2,7 +2,7 @@ bidict==0.23.1
 cachelib==0.13.0
 click==8.1.7
 dnspython==2.6.1
-eventlet=0.36.1
+eventlet==0.36.1
 Flask==3.0.3
 Flask-Login==0.6.3
 Flask-Session==0.8.0
