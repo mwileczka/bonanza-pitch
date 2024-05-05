@@ -1,7 +1,0 @@
-spec:
-  name: bonanza-pitch
-  services:
-  - name: web
-    git:
-      branch: master
-      repo_clone_url: https://github.com/mwileczka/bonanza-pitch.git
